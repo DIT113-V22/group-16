@@ -2,12 +2,12 @@
 
 ## Group-16
 ## Members:
-Bora Kocak
-Daniel Dovhun
-Cuong Darma Le Manh
-Danila Baryshev
-Yuhan Li
-Qianyuan Wang
+* Bora Kocak
+* Daniel Dovhun
+* Cuong Darma Le Manh
+* Danila Baryshev
+* Yuhan Li
+* Qianyuan Wang
 
 ## What?
   A software that allows an end user to control a smart car remotely. This app will allow users to control and watch a live stream. Besides, the smart car can detect obstacles around it and avoid it using embedded sensors for it to travel freely. The smart car also have the featurs such as emergency breaking system, automatic pathing and parking. (Depends on the time and resourses, the scope will change).
