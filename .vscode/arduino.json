@@ -1,0 +1,4 @@
+{
+    "sketch": "obstacleAvoidance/obstacleAvoidance.ino",
+    "board": "arduino:avr:uno"
+}
