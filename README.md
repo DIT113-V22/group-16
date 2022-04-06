@@ -25,7 +25,7 @@ cars that can avoid obstacles themselves
   </p>
   <h2> How?</h2>
   <p>During the making of the car mostly arduino and the SMCE will be used. Java and C/C++ will be used to developed software for the project.
-The team will work with agile development methods
+The team will work with agile development methods.
   </p>
 </div>
  
