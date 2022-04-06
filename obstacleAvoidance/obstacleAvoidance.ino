@@ -14,7 +14,7 @@ SimpleCar car(control);
 
 const int triggerPin           = 6; // D6
 const int echoPin              = 7; // D7
-const unsigned int maxDistance = 500;
+const unsigned int maxDistance = 400;
 
 SR04 front{arduinoRuntime, triggerPin, echoPin, maxDistance};
 
