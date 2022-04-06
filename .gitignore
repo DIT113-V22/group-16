@@ -38,6 +38,7 @@
 # Gradle files
 .gradle/
 build/
+.vscode/
 
 # Local configuration file (sdk path, etc)
 local.properties
