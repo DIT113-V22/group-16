@@ -27,7 +27,7 @@ void setup()
 void loop()
 { 
      int distanceFromObjects = front.getDistance();
-     if (distanceFromObjects < 100){
+     if (distanceFromObjects < 100 && distanceFromObjects > 0){
       car.setSpeed(stoppingSpeed);
      }
     Serial.println(distanceFromObjects);
