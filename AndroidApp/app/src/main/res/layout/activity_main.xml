@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
     <VideoView
         android:id="@+id/videoView"
@@ -16,7 +15,7 @@
         app:layout_constraintVertical_bias="0.002" />
 
     <Button
-        android:id="@+id/button5"
+        android:id="@+id/buttonStop"
         android:layout_width="116dp"
         android:layout_height="68dp"
         android:text="stop"
@@ -28,7 +27,7 @@
         app:layout_constraintVertical_bias="0.749" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/buttonLeft"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Left"
@@ -40,7 +39,7 @@
         app:layout_constraintVertical_bias="0.745" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/buttonBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Back"
@@ -52,7 +51,7 @@
         app:layout_constraintVertical_bias="0.9" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/buttonAhead"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Ahead"
@@ -64,7 +63,7 @@
         app:layout_constraintVertical_bias="0.587" />
 
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/buttonRight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Right"
@@ -76,7 +75,7 @@
         app:layout_constraintVertical_bias="0.745" />
 
     <Switch
-        android:id="@+id/switch1"
+        android:id="@+id/switchCruise"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
