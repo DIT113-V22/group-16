@@ -19,6 +19,7 @@ import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -26,19 +27,43 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 
 public class MainActivity extends AppCompatActivity {
-    final String host = "tcp://192.168.0.242:18083";
-
+    private MqttAndroidClient mMqttClient;
+    private static final String MQTT_SERVER = "tcp://192.168.0.242:1883";
+    private static final String TAG = "SmartCarMqttController";
+    static String USERNAME = "admin";
+    static String PASSWORD = "hivemq";
+    MqttAndroidClient client;
 
     int IMAGE_WIDTH = 411;
     int IMAGE_HEIGHT = 250;
     final Bitmap bm = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
 
-    MqttAndroidClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        client = new MqttAndroidClient(MainActivity.this, MQTT_SERVER, TAG);
+
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setUserName(USERNAME);//set the username
+        options.setPassword(PASSWORD.toCharArray());//set the username
+
+        try {
+            client.connect(options,new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.e(TAG,"success");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    Log.e(TAG,"Fail");
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
 
         Button Ahead = findViewById(R.id.buttonAhead);
         Button Back = findViewById(R.id.buttonBack);
@@ -150,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        client.setCallback(new MqttCallback() {
+        /* client.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
             }
@@ -180,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        */
     }
 
 }
