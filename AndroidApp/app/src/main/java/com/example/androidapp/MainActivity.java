@@ -1,9 +1,6 @@
 package com.example.androidapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.graphics.Bitmap;
-import android.graphics.Camera;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,9 +8,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.Switch;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
