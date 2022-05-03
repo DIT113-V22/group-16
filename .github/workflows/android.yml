@@ -18,9 +18,10 @@ jobs:
       with:
         java-version: '11'
         distribution: 'temurin'
-        cache: gradle
-
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
+        
+    - name: Clone Repo
+      uses: actions/checkout@v2
+    - name: Build SmartcarMqttController
+      run: |
+       cd AndroidApp
+       ./gradlew build --stacktrace
