@@ -32,6 +32,19 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "SmartCarMqttController";
     static String USERNAME = "admin";
     static String PASSWORD = "hivemq";
+    private String topic = "/Group/16";
+    private String backTopic = "/Group/16/Back";
+    private String frontTopic = "/Group/16/Front";
+    private String leftTopic = "/Group/16/Left";
+    private String rightTopic = "/Group/16/Right";
+    private String stopTopic = "/Group/16/Stop";
+    private String cruiseTopic = "/Group/16/Cruise";
+
+    private String backMessage;
+    private String frontMessage;
+    private String leftMessage;
+    private String rightMessage;
+
     MqttAndroidClient client;
 
     int IMAGE_WIDTH = 411;
@@ -83,11 +96,23 @@ public class MainActivity extends AppCompatActivity {
         Cruise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
             @Override
             public void onCheckedChanged(CompoundButton Cruise, boolean isChecked) {
+                String cruiseMessage = "Cruise";
                 //Prevent the listener from triggering during initialization
                 if (Cruise.isPressed()) {
+                    try {
+                        client.publish(cruiseTopic, cruiseMessage.getBytes(), 0, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                     return;
                 } else {
                     //return to use manual control;
+                    String message = "Stop";
+                    try {
+                        client.publish(stopTopic, message.getBytes(), 0, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -97,6 +122,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //When "Stop" is clicked the car stop
+                String message = "Stop";
+
+                try {
+                    client.publish(stopTopic, message.getBytes(), 0, false);
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -104,12 +136,23 @@ public class MainActivity extends AppCompatActivity {
         Ahead.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                String frontMessage = "Ahead";
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     // button released
-
+                    try {
+                        client.publish(frontTopic, frontMessage.getBytes(), 0, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
 
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     // button released.
+                    String message = "Stop";
+                    try {
+                        client.publish(stopTopic, message.getBytes(), 0, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
 
                 }
                 return false;
@@ -119,11 +162,22 @@ public class MainActivity extends AppCompatActivity {
         Back.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                String backMessage = "Back";
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     // button pressed
-
+                    try {
+                        client.publish(backTopic, backMessage.getBytes(), 0, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     // button released.
+                    String message = "Stop";
+                    try {
+                        client.publish(stopTopic, message.getBytes(), 0, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
 
                 }
                 return false;
@@ -135,10 +189,20 @@ public class MainActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     // button pressed
-
+                    String leftMessage = "Left";
+                    try {
+                        client.publish(leftTopic, leftMessage.getBytes(), 0, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     // button released.
-
+                    String message = "Stop";
+                    try {
+                        client.publish(stopTopic, message.getBytes(), 0, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                 }
                 return false;
             }
@@ -149,10 +213,20 @@ public class MainActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     // button pressed
-
+                    String rightMessage = "Right";
+                    try {
+                        client.publish(rightTopic, rightMessage.getBytes(), 0, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     // button released.
-
+                    String message = "Stop";
+                    try {
+                        client.publish(stopTopic, message.getBytes(), 0, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                 }
                 return false;
             }
