@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AndroidApp</string>
+    <string name="camera_view">\@camera_view</string>
 </resources>

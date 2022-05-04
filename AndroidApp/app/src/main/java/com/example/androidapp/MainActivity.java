@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "SmartCarMqttController";
     static String USERNAME = "admin";
     static String PASSWORD = "hivemq";
+
     private String topic = "/Group/16";
     private String backTopic = "/Group/16/Back";
     private String frontTopic = "/Group/16/Front";
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private String frontMessage;
     private String leftMessage;
     private String rightMessage;
+
     MqttAndroidClient client;
 
     int IMAGE_WIDTH = 411;
@@ -108,16 +110,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String message = "Stop";
-                frontMessage = 0;
-                backMessage = 0;
-                leftMessage = 0;
-                rightMessage = 0;
 
                 try {
-                    client.publish(frontMessage, frontMessage.getBytes(), 0, false);
-                    client.publish(backMessage, backMessage.getBytes(), 0, false);
-                    client.publish(leftMessage, leftMessage.getBytes(), 0, false);
-                    client.publish(rightMessage, rightMessage.getBytes(), 0, false);
                     client.publish(stopTopic, message.getBytes(), 0, false);
                 } catch (MqttException e) {
                     e.printStackTrace();
