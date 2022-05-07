@@ -160,29 +160,29 @@ void rotate(int degrees, float speed)
 }
 
 void go(long centimeters, float speed)
-{
-    if (centimeters == 0)
-    {
-        return;
-    }
-    // Ensure the speed is towards the correct direction
-    speed = smartcarlib::utils::getAbsolute(speed) * ((centimeters < 0) ? -1 : 1);
-    car.setSpeed(speed);
-    car.setAngle(0);
+ {
+     if (centimeters == 0)
+     {
+         return;
+     }
+     // Ensure the speed is towards the correct direction
+     speed = smartcarlib::utils::getAbsolute(speed) * ((centimeters < 0) ? -1 : 1);
+     car.setSpeed(speed);
+     car.setAngle(0);
 
-    long initialDistance          = car.getDistance();
-    bool hasReachedTargetDistance = false;
-    while (!hasReachedTargetDistance)
-    {
-        car.update();
-        auto currentDistance   = car.getDistance();
-        auto travelledDistance = initialDistance > currentDistance
-                                     ? initialDistance - currentDistance
-                                     : currentDistance - initialDistance;
-        hasReachedTargetDistance = travelledDistance >= smartcarlib::utils::getAbsolute(centimeters);
-    }
-    car.setSpeed(0);
-}
+     long initialDistance          = car.getDistance();
+     bool hasReachedTargetDistance = false;
+     while (!hasReachedTargetDistance)
+     {
+         car.update();
+         auto currentDistance   = car.getDistance();
+         auto travelledDistance = initialDistance > currentDistance
+                                      ? initialDistance - currentDistance
+                                      : currentDistance - initialDistance;
+         hasReachedTargetDistance = travelledDistance >= smartcarlib::utils::getAbsolute(centimeters);
+     }
+     car.setSpeed(0);
+ }
 
 void ctrlHeading(char input)
 {
