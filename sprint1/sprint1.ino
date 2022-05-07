@@ -1,5 +1,14 @@
 #include <Smartcar.h>
 #include <HardwareSerial.h>
+#include <vector>
+
+#include <MQTT.h>
+#include <WiFi.h>
+
+
+MQTTClient mqtt;
+WiFiClient net;
+std::vector<char> frameBuffer;
 
 const int forwardSpeed = 80;
 const int backwordSpeed = -80; // 50% of the full speed backward
@@ -16,9 +25,10 @@ const float cruiseSpeed = 1.0;
 const float speedToTurn = 0.2;  
 const int degreesToTurn = 90;
 
-bool updateFlag = false;
+/*bool updateFlag = false;
 bool forward = true;
 bool cruiseFlag = false;
+*/
 
 ArduinoRuntime arduinoRuntime;
 
@@ -214,6 +224,28 @@ void ctrlHeading(char input)
 void setup()
 {
     Serial.begin(9600);
+    Camera.begin(QVGA, RGB888, 15);
+    frameBuffer.resize(Camera.width() * Camera.height() * Camera.bytesPerPixel());
+    WiFi.begin(ssid, pass);
+    mqtt.begin(mqttBrokerUrl, 1883, net);
+    WiFi.begin(ssid, pass);
+    mqtt.begin(mqttBrokerUrl, 1883, net);
+
+    Serial.println("Connecting to WiFi...");
+    auto wifiStatus = WiFi.status();
+    while (wifiStatus != WL_CONNECTED && wifiStatus != WL_NO_SHIELD) {
+      Serial.println(wifiStatus);
+      Serial.print(".");
+      delay(1000);
+      wifiStatus = WiFi.status();
+    }
+
+
+   Serial.println("Connecting to MQTT broker");
+   while (!mqtt.connect("arduino", "public", "public")) {
+     Serial.print(".");
+     delay(1000);
+   }
 }
 
 void loop()

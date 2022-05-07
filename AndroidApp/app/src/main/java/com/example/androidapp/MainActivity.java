@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private String frontTopic = "/Group/16/Front";
     private String leftTopic = "/Group/16/Left";
     private String rightTopic = "/Group/16/Right";
+    private String controlTopic = "/Group/16/Control";
     private String stopTopic = "/Group/16/Stop";
     private String cruiseTopic = "/Group/16/Cruise";
     private String backMessage;
