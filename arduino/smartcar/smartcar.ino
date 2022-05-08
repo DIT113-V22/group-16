@@ -164,11 +164,11 @@ void publishDistance(){
     car.update();
     const auto leftDistance = String(infraLeft.getDistance());
     const auto rightDistance = String(infraRight.getDistance());
-    const auto backDistance = String(infraBack.getDistance());
+    const auto frontDistance = String(infraFront.getDistance());
 
     mqtt.publish("Group/16/Distance/Left", leftDistance);
     mqtt.publish("Group/16/Distance/Right", rightDistance);
-    mqtt.publish("Group/16/Distance/Back", backDistance);
+    mqtt.publish("Group/16/Distance/Front", frontDistance);
 }
 
 

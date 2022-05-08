@@ -37,14 +37,13 @@ public class MainActivity extends AppCompatActivity {
     static String USERNAME = "admin";
     static String PASSWORD = "hivemq";
     private String topic = "/Group/16";
-    private String backTopic = "/Group/16/Back";
-    private String frontTopic = "/Group/16/Front";
-    private String leftTopic = "/Group/16/Left";
-    private String rightTopic = "/Group/16/Right";
-    private String stopTopic = "/Group/16/Stop";
-    private String cruiseTopic = "/Group/16/Cruise";
-    private String leftDistanceTopic = "/Group/16/LeftDistance";
     private String controlTopic = "/Group/16/Control";
+    private String cruiseTopic = "/Group/16/Cruise";
+
+    private String leftDistanceTopic = "/Group/16/Distance/Left";
+    private String rightDistanceTopic = "/Group/16/Distance/Right";
+    private String frontDistanceTopic = "/Group/16/Distance/Front";
+
 
     private String backMessage;
     private String frontMessage;
@@ -99,13 +98,28 @@ public class MainActivity extends AppCompatActivity {
         ProgressBar MiddleBar = findViewById(R.id.progressBarMiddle);
         ProgressBar RightBar = findViewById(R.id.progressBarRight);
 
+        //Timer for progressbar
+
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                progressBar(leftDistanceTopic, LeftBar);
+                progressBar(rightDistanceTopic, RightBar);
+                progressBar(frontDistanceTopic, MiddleBar);
+            }
+        }, 0, 35)
 
         Stream.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-
+            public void onClick(View v) {
+                try {
+                    cameraView(cameraTopic, Stream);
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
             }
         });
+
 
         Cruise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
             @Override
@@ -236,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void ProgressBar (String topic, ProgressBar progressBar) throws MqttException {
+    public void progressBar (String topic, ProgressBar progressBar) throws MqttException {
 
         IMqttToken subToken = client.subscribe(topic, 0);
         subToken.setActionCallback(new IMqttActionListener() {
