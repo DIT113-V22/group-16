@@ -3,15 +3,19 @@ package com.example.androidapp;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -32,19 +36,23 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "SmartCarMqttController";
     static String USERNAME = "admin";
     static String PASSWORD = "hivemq";
-
     private String topic = "/Group/16";
     private String backTopic = "/Group/16/Back";
     private String frontTopic = "/Group/16/Front";
     private String leftTopic = "/Group/16/Left";
     private String rightTopic = "/Group/16/Right";
-    private String controlTopic = "/Group/16/Control";
     private String stopTopic = "/Group/16/Stop";
     private String cruiseTopic = "/Group/16/Cruise";
+    private String leftDistanceTopic = "/Group/16/LeftDistance";
+    private String controlTopic = "/Group/16/Control";
+
     private String backMessage;
     private String frontMessage;
     private String leftMessage;
     private String rightMessage;
+
+    private int progress = 0;
+    private Handler ProgressHandler;
 
     MqttAndroidClient client;
 
@@ -87,6 +95,11 @@ public class MainActivity extends AppCompatActivity {
         Switch Cruise = (Switch)findViewById(R.id.switchCruise);
         ImageView Stream = findViewById(R.id.imageView);
 
+        ProgressBar LeftBar = findViewById(R.id.progressBarLeft);
+        ProgressBar MiddleBar = findViewById(R.id.progressBarMiddle);
+        ProgressBar RightBar = findViewById(R.id.progressBarRight);
+
+
         Stream.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -97,25 +110,23 @@ public class MainActivity extends AppCompatActivity {
         Cruise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
             @Override
             public void onCheckedChanged(CompoundButton Cruise, boolean isChecked) {
+                String cruiseMessage = "Cruise";
                 //Prevent the listener from triggering during initialization
                 if (Cruise.isPressed()) {
-                    String message;
-
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        message = "Cruise";
-                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                        message = "Stop";
-                    }
-
-
                     try {
-                        client.publish(controlTopic, message.getBytes(), 1, false);
+                        client.publish(controlTopic, cruiseMessage.getBytes(), 1, false);
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
                     return;
                 } else {
                     //return to use manual control;
+                    String message = "Stop";
+                    try {
+                        client.publish(controlTopic, message.getBytes(), 1, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -124,14 +135,14 @@ public class MainActivity extends AppCompatActivity {
         Stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //When "Stop" is clicked the car stop
                 String message = "Stop";
+
                 try {
-                    client.publish(stopTopic, message.getBytes(), 1, false);
+                    client.publish(controlTopic, message.getBytes(), 1, false);
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
-
-                //When "Stop" is clicked the car stop
             }
         });
 
@@ -223,6 +234,45 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
+    public void ProgressBar (String topic, ProgressBar progressBar) throws MqttException {
+
+        IMqttToken subToken = client.subscribe(topic, 0);
+        subToken.setActionCallback(new IMqttActionListener() {
+            @Override
+            public void onSuccess(IMqttToken asyncActionToken) {
+
+            }
+
+            @Override
+            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+
+            }
+        });
+        client.setCallback(new MqttCallback() {
+            @Override
+            public void connectionLost(Throwable cause) {
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) throws Exception {
+
+                if (topic.equals(leftDistanceTopic)) {
+                    int progress = (Integer.parseInt(message.toString())/320)*100;
+
+                    progressBar.setProgress(progress);
+                }
+            }
+
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+
+            }
+        });
+    }
+
     public void cameraView(String topic, ImageView camera) throws MqttException {
 
         IMqttToken subToken = client.subscribe(topic, 0);
