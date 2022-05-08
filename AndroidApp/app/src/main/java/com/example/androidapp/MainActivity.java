@@ -99,6 +99,20 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton Cruise, boolean isChecked) {
                 //Prevent the listener from triggering during initialization
                 if (Cruise.isPressed()) {
+                    String message;
+
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        message = "Cruise";
+                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                        message = "Stop";
+                    }
+
+
+                    try {
+                        client.publish(controlTopic, message.getBytes(), 1, false);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                     return;
                 } else {
                     //return to use manual control;
@@ -111,9 +125,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String message = "Stop";
-
                 try {
-                    client.publish(stopTopic, message.getBytes(), 0, false);
+                    client.publish(stopTopic, message.getBytes(), 1, false);
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -126,13 +139,19 @@ public class MainActivity extends AppCompatActivity {
         Ahead.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                String message;
+
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    // button released
-
-
+                    message = "Forward";
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    // button released.
+                    message = "Stop";
+                }
 
+
+                try {
+                    client.publish(controlTopic, message.getBytes(), 1, false);
+                } catch (MqttException e) {
+                    e.printStackTrace();
                 }
                 return false;
             }
@@ -141,12 +160,19 @@ public class MainActivity extends AppCompatActivity {
         Back.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                String message;
+
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    // button pressed
-
+                    message = "Backward";
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    // button released.
+                    message = "Stop";
+                }
 
+
+                try {
+                    client.publish(controlTopic, message.getBytes(), 1, false);
+                } catch (MqttException e) {
+                    e.printStackTrace();
                 }
                 return false;
             }
@@ -155,12 +181,19 @@ public class MainActivity extends AppCompatActivity {
         Left.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                String message;
+
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    // button pressed
-
+                    message = "Left";
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    // button released.
+                    message = "Stop";
+                }
 
+
+                try {
+                    client.publish(controlTopic, message.getBytes(), 1, false);
+                } catch (MqttException e) {
+                    e.printStackTrace();
                 }
                 return false;
             }
@@ -169,13 +202,21 @@ public class MainActivity extends AppCompatActivity {
         Right.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                String message;
+
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    // button pressed
-
+                    message = "Right";
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    // button released.
-
+                    message = "Stop";
                 }
+
+
+                try {
+                    client.publish(controlTopic, message.getBytes(), 1, false);
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+
                 return false;
             }
         });
