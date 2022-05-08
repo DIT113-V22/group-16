@@ -46,16 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private String leftDistanceTopic = "/Group/16/Distance/Left";
     private String rightDistanceTopic = "/Group/16/Distance/Right";
     private String frontDistanceTopic = "/Group/16/Distance/Front";
-
-
-    private String backMessage;
-    private String frontMessage;
-    private String leftMessage;
-    private String rightMessage;
-
-    private int progress = 0;
-    private Handler ProgressHandler;
-
+    private boolean isConnected = false;
     MqttAndroidClient client;
 
     int IMAGE_WIDTH = 411;
@@ -103,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Timer for progressbar
 
-        /*new Timer().scheduleAtFixedRate(new TimerTask() {
+        new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 try {
@@ -122,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-        }, 0, 35);*/
+        }, 0, 35);
 
         Stream.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -267,36 +258,28 @@ public class MainActivity extends AppCompatActivity {
 
     public void progressBar (String topic, ProgressBar progressBar) throws MqttException {
 
-        IMqttToken subToken = client.subscribe(topic, 0);
-        subToken.setActionCallback(new IMqttActionListener() {
-            @Override
-            public void onSuccess(IMqttToken asyncActionToken) {
 
-            }
-
-            @Override
-            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-
-            }
-        });
        client.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
+                isConnected = false;
+
+                final String connectionLost = "Connection to MQTT broker lost";
+                Log.w(TAG, connectionLost);
+                Toast.makeText(getApplicationContext(), connectionLost, Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
+                int progress = (Integer.parseInt(message.toString())/320)*100;
+                progressBar.setProgress(progress);
 
-                if (topic.equals(leftDistanceTopic)) {
-                    int progress = (Integer.parseInt(message.toString())/320)*100;
-                    progressBar.setProgress(progress);
-                }
             }
 
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                Log.d(TAG, "Message delivered");
             }
         });
     }
