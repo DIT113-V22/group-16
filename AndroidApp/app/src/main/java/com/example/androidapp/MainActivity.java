@@ -28,6 +28,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -39,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private String topic = "/Group/16";
     private String controlTopic = "/Group/16/Control";
     private String cruiseTopic = "/Group/16/Cruise";
+    private String cameraTopic = "/Group/16/Camera";
 
     private String leftDistanceTopic = "/Group/16/Distance/Left";
     private String rightDistanceTopic = "/Group/16/Distance/Right";
@@ -100,14 +103,26 @@ public class MainActivity extends AppCompatActivity {
 
         //Timer for progressbar
 
-        new Timer().scheduleAtFixedRate(new TimerTask() {
+        /*new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                progressBar(leftDistanceTopic, LeftBar);
-                progressBar(rightDistanceTopic, RightBar);
-                progressBar(frontDistanceTopic, MiddleBar);
+                try {
+                    progressBar(leftDistanceTopic, LeftBar);
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    progressBar(rightDistanceTopic, RightBar);
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    progressBar(frontDistanceTopic, MiddleBar);
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
             }
-        }, 0, 35)
+        }, 0, 35);*/
 
         Stream.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -164,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         Ahead.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                String message;
+                String message =null;
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     message = "Forward";
@@ -185,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
         Back.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                String message;
+                String message = null;
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     message = "Backward";
@@ -206,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
         Left.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                String message;
+                String message = null;
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     message = "Left";
@@ -227,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
         Right.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                String message;
+                String message = null;
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     message = "Right";
@@ -264,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        client.setCallback(new MqttCallback() {
+       client.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
             }
@@ -274,7 +289,6 @@ public class MainActivity extends AppCompatActivity {
 
                 if (topic.equals(leftDistanceTopic)) {
                     int progress = (Integer.parseInt(message.toString())/320)*100;
-
                     progressBar.setProgress(progress);
                 }
             }
