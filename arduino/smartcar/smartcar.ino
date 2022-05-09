@@ -116,17 +116,15 @@ void loop() {
         publishDistance();
 
         mqtt.subscribe(controlTopic, 1); //QoS 1
-        mqtt.onMessage([](String topic, String message));
+        mqtt.onMessage([](String topic, String message)){
+            car.update();
 
-
-        car.update();
-
-        if(message == "Cruise"){
-            cruiseControl();
-        } else if(message == "Stop"){
-            carBrake();
-        }
-        else ctrlHeading(message);
+            if(message == "Cruise"){
+                cruiseControl();
+            } else if(message == "Stop"){
+                carBrake();
+            }
+            else ctrlHeading(message);
             if(car.getSpeed() != 0 && forward)
             {
                 obstacleAvoidance(BrakeDistance);
@@ -152,7 +150,7 @@ void loop() {
                 car.setAngle(0);
                 car.update();
             }
-
+        };
     }
 
 
