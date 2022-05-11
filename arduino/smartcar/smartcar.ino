@@ -49,7 +49,7 @@ const int degreesToTurn = 90;
 
 //Mqtt topics
 const String controlTopic = "Group/16/Control";
-const String streamTopic = "Group/16/Damera";
+const String streamTopic = "Group/16/Camera";
 const String distanceTopic = "Group/16/Distance";
 
 
@@ -312,15 +312,3 @@ void go(long centimeters, float speed)
      }
      car.setSpeed(0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
