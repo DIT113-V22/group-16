@@ -110,13 +110,13 @@ void setup() {
             wifiStatus = WiFi.status();
         }
         
-        while (!mqtt.connect("SmartCarMQTT", "SmartCarMQTT", " ")) {
-    Serial.println("MQTT Connecting...");
-    delay(1000);
-  }
-  if (mqtt.connected()) {
-    Serial.println("Connected to MQTT Broker");
-  }
+    while (!mqtt.connect("SmartCarMQTT", "SmartCarMQTT", " ")) {
+        Serial.println("MQTT Connecting...");
+        delay(1000);
+    }
+    if (mqtt.connected()) {
+        Serial.println("Connected to MQTT Broker");
+    }
 }
 
 
@@ -173,12 +173,15 @@ void loop() {
 //mqtt sensor distance
 void publishDistance(){
     car.update();
+
     const auto leftDistance = String(infraLeft.getDistance());
     const auto rightDistance = String(infraRight.getDistance());
     const auto frontDistance = String(infraFront.getDistance());
-
+    mqtt.connect("SmartCarMQTT", "SmartCarMQTT", " ");
     mqtt.publish("Group/16/Distance/Left", leftDistance);
+    mqtt.connect("SmartCarMQTT", "SmartCarMQTT", " ");
     mqtt.publish("Group/16/Distance/Right", rightDistance);
+    mqtt.connect("SmartCarMQTT", "SmartCarMQTT", " ");
     mqtt.publish("Group/16/Distance/Front", frontDistance);
 }
 
