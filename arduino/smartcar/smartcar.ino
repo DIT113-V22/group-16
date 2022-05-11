@@ -48,9 +48,9 @@ const float speedToTurn = 0.2;
 const int degreesToTurn = 90;
 
 //Mqtt topics
-const String controlTopic = "Group/16/Control";
-const String streamTopic = "Group/16/Damera";
-const String distanceTopic = "Group/16/Distance";
+const String controlTopic = "/Group/16/Control";
+const String streamTopic = "/Group/16/Camera";
+const String distanceTopic = "/Group/16/Distance";
 
 
 
@@ -109,6 +109,14 @@ void setup() {
             delay(1000);
             wifiStatus = WiFi.status();
         }
+        
+        while (!mqtt.connect("SmartCarMQTT", "SmartCarMQTT", " ")) {
+    Serial.println("MQTT Connecting...");
+    delay(1000);
+  }
+  if (mqtt.connected()) {
+    Serial.println("Connected to MQTT Broker");
+  }
 }
 
 
@@ -312,15 +320,3 @@ void go(long centimeters, float speed)
      }
      car.setSpeed(0);
 }
-
-
-
-
-
-
-
-
-
-
-
-

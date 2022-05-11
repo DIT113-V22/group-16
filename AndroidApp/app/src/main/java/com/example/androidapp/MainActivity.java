@@ -38,10 +38,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "SmartCarMqttController";
     static String USERNAME = "admin";
     static String PASSWORD = "hivemq";
-    private String topic = "/Group/16";
-    private String controlTopic = "/Group/16/Control";
-    private String cruiseTopic = "/Group/16/Cruise";
-    private String cameraTopic = "/Group/16/Camera";
+    private final String topic = "/Group/16";
+    private final String controlTopic = "/Group/16/Control";
+    private final String streamTopic = "/Group/16/Stream";
 
     private String leftDistanceTopic = "/Group/16/Distance/Left";
     private String rightDistanceTopic = "/Group/16/Distance/Right";
@@ -119,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    cameraView(cameraTopic, Stream);
+                    cameraView(streamTopic, Stream);
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -170,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
         Ahead.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                String message =null;
+                String message ="Stop";
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     message = "Forward";
@@ -191,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
         Back.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                String message = null;
+                String message = "Stop";
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     message = "Backward";
@@ -212,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
         Left.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                String message = null;
+                String message = "Stop";
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     message = "Left";
@@ -233,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
         Right.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                String message = null;
+                String message = "Stop";
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     message = "Right";
@@ -306,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
-                if (topic.equals(cameraTopic)) {
+                if (topic.equals(streamTopic)) {
 
                     final byte[] payload = message.getPayload();
                     final int[] colors = new int[IMAGE_WIDTH * IMAGE_HEIGHT];
