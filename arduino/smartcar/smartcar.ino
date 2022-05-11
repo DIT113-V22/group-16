@@ -2,20 +2,22 @@
 #include <HardwareSerial.h>
 #include <vector>
 #include <MQTT.h>
-#include <Wifi.h>
+#include <WiFi.h>
+
 
 #ifdef __SMCE__
 #include <OV767X.h>
 #endif
 
-MQttClient mqtt;
+MQTTClient mqtt;
 WiFiClient net;
-
+const auto mqttBrokerUrl = "192.168.0.242";
 
 const char ssid[] = "admin";
 const char pass[] = "hivemq";
 
 std::vector<char> frameBuffer;
+
 
 //Declaring pins
 const unsigned short GYRO_PIN = 37;
@@ -25,8 +27,8 @@ const unsigned short LEFT_INFRA_PIN = 1;
 const unsigned short RIGHT_INFRA_PIN = 2;
 const unsigned short BACK_INFRA_PIN = 3;
 
-const unsigned short ULTRA_SONIC_TRIGGER_PIN = 6
-const unsigned short ULTRA_SONIC_ECHO_PIN = 7
+const unsigned short ULTRA_SONIC_TRIGGER_PIN = 6;
+const unsigned short ULTRA_SONIC_ECHO_PIN = 7;
 const unsigned int MAX_DISTANCE = 400;
 
 //Declaring speed
@@ -67,6 +69,7 @@ DirectionlessOdometer rightOdometer{ arduinoRuntime,
                           pulsesPerMeter };
 
 
+
 GY50 gyroscope(arduinoRuntime, GYRO_PIN);
 SR04 ultraFront(arduinoRuntime, ULTRA_SONIC_TRIGGER_PIN, ULTRA_SONIC_ECHO_PIN, MAX_DISTANCE);
 
@@ -76,7 +79,11 @@ GP2D120 infraRight(arduinoRuntime, RIGHT_INFRA_PIN);
 GP2D120 infraBack(arduinoRuntime, BACK_INFRA_PIN);
 
 
+SmartCar car(arduinoRuntime, control, gyroscope, leftOdometer, rightOdometer);
 
+bool updateFlag = false;
+bool forward = true;
+bool cruiseFlag = false;
 
 
 void setup() {
@@ -95,14 +102,14 @@ void setup() {
     Serial.println("Connecting to WiFi...");
         auto wifiStatus = WiFi.status();
         while (wifiStatus != WL_CONNECTED && wifiStatus != WL_NO_SHIELD) {
-          Serial.println(wifiStatus);
-          Serial.print(".");
-          delay(1000);
-          wifiStatus = WiFi.status();
+            Serial.println(wifiStatus);
+            Serial.print(".");
+            delay(1000);
+            wifiStatus = WiFi.status();
         }
-    }
-
 }
+
+
 
 void loop() {
     if(mqtt.connected()){
@@ -116,7 +123,7 @@ void loop() {
         publishDistance();
 
         mqtt.subscribe(controlTopic, 1); //QoS 1
-        mqtt.onMessage([](String topic, String message)){
+        mqtt.onMessage([](String topic, String message){
             car.update();
 
             if(message == "Cruise"){
@@ -125,14 +132,11 @@ void loop() {
                 carBrake();
             }
             else ctrlHeading(message);
-            if(car.getSpeed() != 0 && forward)
-            {
-                obstacleAvoidance(BrakeDistance);
-            }
+            
 
             if(car.getSpeed() == 0 && cruiseFlag)
             {
-                if(front.getDistance() < BrakeDistance && front.getDistance() > 0)
+                if(ultraFront.getDistance() < BrakeDistance && ultraFront.getDistance() > 0)
                 {
                     rotate(degreesToTurn, speedToTurn);
                     car.setSpeed(cruiseSpeed);
@@ -141,7 +145,7 @@ void loop() {
                 }
             }
 
-            if((front.getDistance() > 0 && front.getDistance() < crackDistance) && car.getSpeed() < 0.01 && cruiseFlag)
+            if((ultraFront.getDistance() > 0 && ultraFront.getDistance() < crackDistance) && car.getSpeed() < 0.01 && cruiseFlag)
             {
                 Serial.println("go back");
                 go(backDistance, cruiseSpeed);
@@ -150,11 +154,8 @@ void loop() {
                 car.setAngle(0);
                 car.update();
             }
-        };
+        });
     }
-
-
-
 }
 
 //mqtt sensor distance
@@ -180,9 +181,10 @@ void carBrake()
 
 void cruiseControl()
 {
+    car.update();
     car.enableCruiseControl(5.0F, 0.02F, 10.0F, 50);
     car.setSpeed(cruiseSpeed);
-    car.setAngle(0);
+    car.setAngle(0);    
     updateFlag = true;
     cruiseFlag = true;
     forward = true;
@@ -212,8 +214,7 @@ void rotate(int degrees, float speed)
     int degreesTurnedSoFar = 0;
     int currentHeading = 0;
 
-    while (!hasReachedTargetDegrees)
-    {
+    while (!hasReachedTargetDegrees){
         car.update();
         currentHeading = car.getHeading();
 
@@ -241,48 +242,45 @@ void rotate(int degrees, float speed)
                                   >= smartcarlib::utils::getAbsolute(degrees) - 5;
     }
     car.setSpeed(0);
-}}
-
+}
+/*
 void cameraStream(){
+    const auto currentTime = millis();
     static auto previousFrame = 0UL;
     if(currentTime - previousFrame >=65){
         previousFrame = currentTime;
         Camera.readFrame(frameBuffer.data());
         mqtt.publish(streamTopic, frameBuffer.data(), frameBuffer.size(), false, 0);
-    }
-}
+  }
+}*/
 
-void ctrlHeading(message){
-    switch (message)
-    {
-    case "Left": // rotate counter-clockwise going forward
+void ctrlHeading(String message){
+    if(message.compareTo("Left") == 0){
         car.setSpeed(forwardSpeed);
         car.setAngle(leftDegrees);
         forward = false;
-        break;
-    case "Right": // turn clock-wise
+    } else if( message.compareTo("Right") == 0){
         car.setSpeed(forwardSpeed);
         car.setAngle(rightDegrees);
         forward = false;
-        break;
-    case "Forward": // go ahead
+    } else if( message.compareTo("Forward") == 0){
         car.setSpeed(forwardSpeed);
         car.setAngle(0);
-        obstacleAvoidance(BrakeDistance);
         forward = true;
-        break;
-    case "Backward": // go back
-        if(car.getSpeed() > 0) {
+    } else if(message.compareTo("Backward") == 0){
+        if(car.getSpeed() != 0) {
             carBrake();
         }
         else {
             car.setSpeed(backwardSpeed);
             car.setAngle(0);
-        }
-        break;
-    default: // if you receive something that you don't know, just stop
-        carBreak();
+        }   
+        forward = false;   
+    } else{
+        carBrake();
     }
+
+    
 }
 
 
@@ -309,7 +307,7 @@ void go(long centimeters, float speed)
          hasReachedTargetDistance = travelledDistance >= smartcarlib::utils::getAbsolute(centimeters);
      }
      car.setSpeed(0);
- }
+}
 
 
 
