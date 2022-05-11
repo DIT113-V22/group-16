@@ -48,8 +48,10 @@ const float speedToTurn = 0.2;
 const int degreesToTurn = 90;
 
 //Mqtt topics
-const String controlTopic = "Group/16/control";
-const String streamTopic = "/group/16/camera";
+const String controlTopic = "Group/16/Control";
+const String streamTopic = "Group/16/Damera";
+const String distanceTopic = "Group/16/Distance";
+
 
 
 ArduinoRuntime arduinoRuntime;
@@ -116,44 +118,46 @@ void loop() {
         mqtt.loop();
         const auto currentTime = millis();
 
-        #ifdef __SMCE__
+        /*#ifdef __SMCE__
         cameraStream();
-        #endif
+        #endif*/
 
         publishDistance();
 
         mqtt.subscribe(controlTopic, 1); //QoS 1
         mqtt.onMessage([](String topic, String message){
             car.update();
+            if(topic.compareTo(controlTopic) == 0){
+                if(message == "Cruise"){
+                    cruiseControl();
+                } else if(message == "Stop"){
+                    carBrake();
+                }
+                else ctrlHeading(message);
+                
 
-            if(message == "Cruise"){
-                cruiseControl();
-            } else if(message == "Stop"){
-                carBrake();
-            }
-            else ctrlHeading(message);
-            
-
-            if(car.getSpeed() == 0 && cruiseFlag)
-            {
-                if(ultraFront.getDistance() < BrakeDistance && ultraFront.getDistance() > 0)
+                if(car.getSpeed() == 0 && cruiseFlag)
                 {
+                    if(ultraFront.getDistance() < BrakeDistance && ultraFront.getDistance() > 0)
+                    {
+                        rotate(degreesToTurn, speedToTurn);
+                        car.setSpeed(cruiseSpeed);
+                        car.setAngle(0);
+                        car.update();
+                    }
+                }
+
+                if((ultraFront.getDistance() > 0 && ultraFront.getDistance() < crackDistance) && car.getSpeed() < 0.01 && cruiseFlag)
+                {
+                    Serial.println("go back");
+                    go(backDistance, cruiseSpeed);
                     rotate(degreesToTurn, speedToTurn);
                     car.setSpeed(cruiseSpeed);
                     car.setAngle(0);
                     car.update();
-                }
+                } 
             }
-
-            if((ultraFront.getDistance() > 0 && ultraFront.getDistance() < crackDistance) && car.getSpeed() < 0.01 && cruiseFlag)
-            {
-                Serial.println("go back");
-                go(backDistance, cruiseSpeed);
-                rotate(degreesToTurn, speedToTurn);
-                car.setSpeed(cruiseSpeed);
-                car.setAngle(0);
-                car.update();
-            }
+            
         });
     }
 }
