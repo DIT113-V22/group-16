@@ -68,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     Log.e(TAG,"success");
+                    mMqttClient.subscribe("/Group/16/Distance/Left", QOS, null);
+                    mMqttClient.subscribe("/Group/16/Distance/Right", QOS, null);
+                    mMqttClient.subscribe("/Group/16/Distance/Front", QOS, null);
                 }
 
                 @Override
