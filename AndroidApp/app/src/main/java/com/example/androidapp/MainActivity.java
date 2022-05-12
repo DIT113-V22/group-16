@@ -41,12 +41,13 @@ public class MainActivity extends AppCompatActivity {
     private final String topic = "/Group/16";
     private final String controlTopic = "/Group/16/Control";
     private final String streamTopic = "/Group/16/Stream";
+    private static final int QOS = 1;
 
     private String leftDistanceTopic = "/Group/16/Distance/Left";
     private String rightDistanceTopic = "/Group/16/Distance/Right";
     private String frontDistanceTopic = "/Group/16/Distance/Front";
     private boolean isConnected = false;
-    MqttAndroidClient client;
+
 
     int IMAGE_WIDTH = 411;
     int IMAGE_HEIGHT = 250;
@@ -57,20 +58,31 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        client = new MqttAndroidClient(MainActivity.this, MQTT_SERVER, TAG);
+        mMqttClient = new MqttAndroidClient(MainActivity.this, MQTT_SERVER, TAG);
 
         MqttConnectOptions options = new MqttConnectOptions();
         options.setUserName(USERNAME);//set the username
         options.setPassword(PASSWORD.toCharArray());//set the username
-
         try {
-            client.connect(options,new IMqttActionListener() {
+            mMqttClient.connect(options,new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     Log.e(TAG,"success");
-                    mMqttClient.subscribe("/Group/16/Distance/Left", QOS, null);
-                    mMqttClient.subscribe("/Group/16/Distance/Right", QOS, null);
-                    mMqttClient.subscribe("/Group/16/Distance/Front", QOS, null);
+                    try {
+                        mMqttClient.subscribe("/Group/16/Distance/Left", 1, null);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        mMqttClient.subscribe("/Group/16/Distance/Right", 1, null);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        mMqttClient.subscribe("/Group/16/Distance/Front", 1, null);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
@@ -136,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                 //Prevent the listener from triggering during initialization
                 if (Cruise.isPressed()) {
                     try {
-                        client.publish(controlTopic, cruiseMessage.getBytes(), 1, false);
+                        mMqttClient.publish(controlTopic, cruiseMessage.getBytes(), 1, false);
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
@@ -145,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                     //return to use manual control;
                     String message = "Stop";
                     try {
-                        client.publish(controlTopic, message.getBytes(), 1, false);
+                        mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
@@ -161,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                 String message = "Stop";
 
                 try {
-                    client.publish(controlTopic, message.getBytes(), 1, false);
+                    mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -182,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                 try {
-                    client.publish(controlTopic, message.getBytes(), 1, false);
+                    mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -203,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                 try {
-                    client.publish(controlTopic, message.getBytes(), 1, false);
+                    mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -224,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                 try {
-                    client.publish(controlTopic, message.getBytes(), 1, false);
+                    mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -245,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                 try {
-                    client.publish(controlTopic, message.getBytes(), 1, false);
+                    mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -258,10 +270,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
+
     public void progressBar (String topic, ProgressBar progressBar) throws MqttException {
 
 
-       client.setCallback(new MqttCallback() {
+        mMqttClient.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
                 isConnected = false;
@@ -288,7 +303,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void cameraView(String topic, ImageView camera) throws MqttException {
 
-        IMqttToken subToken = client.subscribe(topic, 0);
+        IMqttToken subToken = mMqttClient.subscribe(topic, 0);
         subToken.setActionCallback(new IMqttActionListener() {
             @Override
             public void onSuccess(IMqttToken asyncActionToken) {
