@@ -15,6 +15,9 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
+
+
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,7 +26,6 @@ import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -33,66 +35,40 @@ import java.util.TimerTask;
 
 
 public class MainActivity extends AppCompatActivity {
-    private MqttAndroidClient mMqttClient;
+    private MqttClient mMqttClient;
     private static final String MQTT_SERVER = "tcp://192.168.0.242:1883";
     private static final String TAG = "SmartCarMqttController";
+    private static final int QOS = 1;
     static String USERNAME = "admin";
-    static String PASSWORD = "hivemq";
+    static String PASSWORD = "emqx";
     private final String topic = "/Group/16";
     private final String controlTopic = "/Group/16/Control";
     private final String streamTopic = "/Group/16/Stream";
-    private static final int QOS = 1;
 
     private String leftDistanceTopic = "/Group/16/Distance/Left";
     private String rightDistanceTopic = "/Group/16/Distance/Right";
     private String frontDistanceTopic = "/Group/16/Distance/Front";
-    private boolean isConnected = false;
 
+    private boolean isConnected = false;
 
     int IMAGE_WIDTH = 411;
     int IMAGE_HEIGHT = 250;
     final Bitmap bm = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+    private ImageView mCameraView;
+    private ProgressBar leftBar;
+    private ProgressBar rightBar;
+    private ProgressBar middleBar;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mMqttClient = new MqttAndroidClient(MainActivity.this, MQTT_SERVER, TAG);
-
+        mMqttClient = new MqttClient(getApplicationContext(), MQTT_SERVER, TAG);
         MqttConnectOptions options = new MqttConnectOptions();
         options.setUserName(USERNAME);//set the username
         options.setPassword(PASSWORD.toCharArray());//set the username
-        try {
-            mMqttClient.connect(options,new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    Log.e(TAG,"success");
-                    try {
-                        mMqttClient.subscribe("/Group/16/Distance/Left", 1, null);
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        mMqttClient.subscribe("/Group/16/Distance/Right", 1, null);
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        mMqttClient.subscribe("/Group/16/Distance/Front", 1, null);
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    Log.e(TAG,"Fail");
-                }
-            });
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+        connectToMqttBroker();
 
         Button Ahead = findViewById(R.id.buttonAhead);
         Button Back = findViewById(R.id.buttonBack);
@@ -100,45 +76,11 @@ public class MainActivity extends AppCompatActivity {
         Button Right = findViewById(R.id.buttonRight);
         Button Stop = findViewById(R.id.buttonStop);
         Switch Cruise = (Switch)findViewById(R.id.switchCruise);
-        ImageView Stream = findViewById(R.id.imageView);
+        mCameraView = findViewById(R.id.imageView);
 
-        ProgressBar LeftBar = findViewById(R.id.progressBarLeft);
-        ProgressBar MiddleBar = findViewById(R.id.progressBarMiddle);
-        ProgressBar RightBar = findViewById(R.id.progressBarRight);
-
-        //Timer for progressbar
-
-        new Timer().scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    progressBar(leftDistanceTopic, LeftBar);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    progressBar(rightDistanceTopic, RightBar);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    progressBar(frontDistanceTopic, MiddleBar);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, 0, 35);
-
-        Stream.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    cameraView(streamTopic, Stream);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        leftBar = findViewById(R.id.progressBarLeft);
+        middleBar = findViewById(R.id.progressBarMiddle);
+        rightBar = findViewById(R.id.progressBarRight);
 
 
         Cruise.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
@@ -147,20 +89,15 @@ public class MainActivity extends AppCompatActivity {
                 String cruiseMessage = "Cruise";
                 //Prevent the listener from triggering during initialization
                 if (Cruise.isPressed()) {
-                    try {
-                        mMqttClient.publish(controlTopic, cruiseMessage.getBytes(), 1, false);
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
+
+                        mMqttClient.publish(controlTopic, cruiseMessage, 1, null);
+
                     return;
                 } else {
                     //return to use manual control;
                     String message = "Stop";
-                    try {
-                        mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
+                        mMqttClient.publish(controlTopic, message, 1, null);
+
                 }
             }
         });
@@ -171,12 +108,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //When "Stop" is clicked the car stop
                 String message = "Stop";
+                mMqttClient.publish(controlTopic, message, 1, null);
 
-                try {
-                    mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
@@ -191,13 +124,8 @@ public class MainActivity extends AppCompatActivity {
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     message = "Stop";
                 }
+                    mMqttClient.publish(controlTopic, message, 1, null);
 
-
-                try {
-                    mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
                 return false;
             }
         });
@@ -212,13 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     message = "Stop";
                 }
-
-
-                try {
-                    mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
+                    mMqttClient.publish(controlTopic, message, 1, null);
                 return false;
             }
         });
@@ -233,13 +155,8 @@ public class MainActivity extends AppCompatActivity {
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     message = "Stop";
                 }
+                    mMqttClient.publish(controlTopic, message, 1, null);
 
-
-                try {
-                    mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
                 return false;
             }
         });
@@ -254,13 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     message = "Stop";
                 }
-
-
-                try {
-                    mMqttClient.publish(controlTopic, message.getBytes(), 1, false);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
+                    mMqttClient.publish(controlTopic, message, 1, null);
 
                 return false;
             }
@@ -268,85 +179,102 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-
-
-
-
-    public void progressBar (String topic, ProgressBar progressBar) throws MqttException {
-
-
-        mMqttClient.setCallback(new MqttCallback() {
-            @Override
-            public void connectionLost(Throwable cause) {
-                isConnected = false;
-
-                final String connectionLost = "Connection to MQTT broker lost";
-                Log.w(TAG, connectionLost);
-                Toast.makeText(getApplicationContext(), connectionLost, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void messageArrived(String topic, MqttMessage message) throws Exception {
-                int progress = (Integer.parseInt(message.toString())/320)*100;
-                progressBar.setProgress(progress);
-
-            }
-
-
-            @Override
-            public void deliveryComplete(IMqttDeliveryToken token) {
-                Log.d(TAG, "Message delivered");
-            }
-        });
+        connectToMqttBroker();
     }
 
-    public void cameraView(String topic, ImageView camera) throws MqttException {
+    @Override
+    protected void onPause() {
+        super.onPause();
 
-        IMqttToken subToken = mMqttClient.subscribe(topic, 0);
-        subToken.setActionCallback(new IMqttActionListener() {
+        mMqttClient.disconnect(new IMqttActionListener() {
             @Override
             public void onSuccess(IMqttToken asyncActionToken) {
-                Toast.makeText(MainActivity.this, "Camera Connected", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "Disconnected from broker");
             }
 
             @Override
             public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                Toast.makeText(MainActivity.this, "Camera Not connected", Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-        /* client.setCallback(new MqttCallback() {
-            @Override
-            public void connectionLost(Throwable cause) {
-            }
+    private void connectToMqttBroker() {
+        if (!isConnected) {
+            mMqttClient.connect(TAG, "", new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    isConnected = true;
 
-            @Override
-            public void messageArrived(String topic, MqttMessage message) throws Exception {
-                if (topic.equals(streamTopic)) {
+                    final String successfulConnection = "Connected to MQTT broker";
+                    Log.i(TAG, successfulConnection);
+                    Toast.makeText(getApplicationContext(), successfulConnection, Toast.LENGTH_SHORT).show();
 
-                    final byte[] payload = message.getPayload();
-                    final int[] colors = new int[IMAGE_WIDTH * IMAGE_HEIGHT];
-                    for (int ci = 0; ci < colors.length; ++ci) {
-                        final byte r = payload[3 * ci];
-                        final byte g = payload[3 * ci + 1];
-                        final byte b = payload[3 * ci + 2];
-                        colors[ci] = Color.rgb(r, g, b);
-                    }
-                    bm.setPixels(colors, 0, IMAGE_WIDTH, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-                    camera.setImageBitmap(bm);
-
-                    Log.e(topic, "[MQTT] Topic: " + topic + " | Message: " + message.toString());
-
+                    mMqttClient.subscribe(leftDistanceTopic, QOS, null);
+                    mMqttClient.subscribe(rightDistanceTopic, QOS, null);
+                    mMqttClient.subscribe(frontDistanceTopic, QOS, null);
+                    mMqttClient.subscribe(streamTopic, QOS, null);
                 }
-            }
 
-            @Override
-            public void deliveryComplete(IMqttDeliveryToken token) {
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    final String failedConnection = "Failed to connect to MQTT broker";
+                    Log.e(TAG, failedConnection);
+                    Toast.makeText(getApplicationContext(), failedConnection, Toast.LENGTH_SHORT).show();
+                }
+            }, new MqttCallback() {
+                @Override
+                public void connectionLost(Throwable cause) {
+                    isConnected = false;
 
-            }
-        });
-        */
+                    final String connectionLost = "Connection to MQTT broker lost";
+                    Log.w(TAG, connectionLost);
+                    Toast.makeText(getApplicationContext(), connectionLost, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+
+                    if (topic.equals(streamTopic)) {
+                        final Bitmap bm = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+
+                        final byte[] payload = message.getPayload();
+                        final int[] colors = new int[IMAGE_WIDTH * IMAGE_HEIGHT];
+                        for (int ci = 0; ci < colors.length; ++ci) {
+                            final int r = payload[3 * ci] & 0xFF;
+                            final int g = payload[3 * ci + 1] & 0xFF;
+                            final int b = payload[3 * ci + 2] & 0xFF;
+                            colors[ci] = Color.rgb(r, g, b);
+                        }
+                        bm.setPixels(colors, 0, IMAGE_WIDTH, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+                        mCameraView.setImageBitmap(bm);
+                    }
+                    if(topic.equals(leftDistanceTopic)){
+                        int progress = (Integer.parseInt(message.toString())/30)*100;
+
+                        leftBar.setProgress(progress);
+                    }
+                    if(topic.equals(rightDistanceTopic)){
+                        int progress = (Integer.parseInt(message.toString())/30)*100;
+
+                        rightBar.setProgress(progress);
+                    }
+                    if(topic.equals(frontDistanceTopic)){
+                        int progress = (Integer.parseInt(message.toString())/30)*100;
+
+                        middleBar.setProgress(progress);
+                    }
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                    Log.d(TAG, "Message delivered");
+                }
+            });
+        }
     }
 
 }
