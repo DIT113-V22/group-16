@@ -38,10 +38,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "SmartCarMqttController";
     static String USERNAME = "admin";
     static String PASSWORD = "hivemq";
+
     private final String topic = "/Group/16";
     private final String controlTopic = "/Group/16/Control";
     private final String streamTopic = "/Group/16/Stream";
     private static final int QOS = 1;
+
 
     private String leftDistanceTopic = "/Group/16/Distance/Left";
     private String rightDistanceTopic = "/Group/16/Distance/Right";

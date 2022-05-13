@@ -48,9 +48,15 @@ const float speedToTurn = 0.2;
 const int degreesToTurn = 90;
 
 //Mqtt topics
+
 const String controlTopic = "/Group/16/Control";
 const String streamTopic = "/Group/16/Camera";
 const String distanceTopic = "/Group/16/Distance";
+=======
+const String controlTopic = "Group/16/Control";
+const String streamTopic = "Group/16/Camera";
+const String distanceTopic = "Group/16/Distance";
+
 
 
 
@@ -281,6 +287,7 @@ void ctrlHeading(String message){
     } else if( message.compareTo("Forward") == 0){
         car.setSpeed(forwardSpeed);
         car.setAngle(0);
+        obstacleAvoidance(BrakeDistance);
         forward = true;
     } else if(message.compareTo("Backward") == 0){
         if(car.getSpeed() != 0) {
@@ -298,6 +305,34 @@ void ctrlHeading(String message){
     
 }
 
+void obstacleAvoidance(int dis)
+{
+    int distanceFromObjects = ultraFront.getDistance();
+    // three levels brake system
+    if(cruiseFlag) {
+        if(distanceFromObjects < dis * 3 && distanceFromObjects > dis * 2) {
+            car.setSpeed(cruiseSpeed * 0.5);
+        }
+        if(distanceFromObjects < dis * 2 && distanceFromObjects > dis) {
+            car.setSpeed(cruiseSpeed * 0.2);
+        } 
+    }
+    else {
+        if(distanceFromObjects < dis * 3 && distanceFromObjects > dis * 2) {
+            car.setSpeed(forwardSpeed * 0.5);
+        }
+        if(distanceFromObjects < dis * 2 && distanceFromObjects > dis) {
+            car.setSpeed(forwardSpeed * 0.2);
+        }
+    }
+
+    if(distanceFromObjects < dis && distanceFromObjects > 0)
+    {
+        car.setSpeed(stoppingSpeed);
+    }
+    // Serial.println("init dis");
+    Serial.println(distanceFromObjects);
+}
 
 void go(long centimeters, float speed)
  {
