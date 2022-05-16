@@ -110,7 +110,7 @@ void setup() {
     //connect to wifi
     WiFi.begin(ssid, pass);
     mqtt.begin(mqttBrokerUrl, 1883, net);
-
+    
     Serial.println("Connecting to WiFi...");
         auto wifiStatus = WiFi.status();
         while (wifiStatus != WL_CONNECTED && wifiStatus != WL_NO_SHIELD) {
@@ -126,17 +126,17 @@ void setup() {
 void loop() {
     if(mqtt.connected()){
         mqtt.loop();
-        String message = "Cruise";
-        String topic = controlTopic;
+        String message;
+        String topic;
 
 
         publishDistance();
-        /*
+        
         mqtt.subscribe(controlTopic, 1); //QoS 1
         mqtt.onMessage([&topic, &message](String receivedTopic, String receivedMessage){
             topic = receivedTopic;
             message = receivedMessage;                      
-        });*/
+        });
 
         controlBus(topic, message);    
 
@@ -158,7 +158,6 @@ void controlBus(String topic, String message){
             control = message;  
             if(control.compareTo("Cruise") == 0){
                 cruiseControl();
-                cruiseFlag = true;
             }
             else if(control.compareTo("Stop") && cruiseFlag){
                 carBrake();
