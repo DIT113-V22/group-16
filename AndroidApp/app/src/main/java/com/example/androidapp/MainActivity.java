@@ -3,8 +3,6 @@ package com.example.androidapp;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,24 +13,24 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import static com.example.androidapp.JoystickView.*;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.LinkedList;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements JoystickListener{
     private MqttClient mMqttClient;
     private static final String MQTT_SERVER = "tcp://192.168.0.242:1883";
     private static final String TAG = "SmartCarMqttController";
@@ -43,19 +41,24 @@ public class MainActivity extends AppCompatActivity {
     private final String controlTopic = "/Group/16/Control";
     private final String streamTopic = "/Group/16/Stream";
 
-    private String leftDistanceTopic = "/Group/16/Distance/Left";
-    private String rightDistanceTopic = "/Group/16/Distance/Right";
-    private String frontDistanceTopic = "/Group/16/Distance/Front";
+    private final String leftDistanceTopic = "/Group/16/Distance/Left";
+    private final String rightDistanceTopic = "/Group/16/Distance/Right";
+    private final String frontDistanceTopic = "/Group/16/Distance/Front";
 
     private boolean isConnected = false;
 
     int IMAGE_WIDTH = 411;
     int IMAGE_HEIGHT = 250;
-    final Bitmap bm = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
     private ImageView mCameraView;
     private ProgressBar leftBar;
     private ProgressBar rightBar;
     private ProgressBar middleBar;
+    public Queue<Float> yDataPackage = new LinkedList<>();
+    public Queue<Float> xDataPackage = new LinkedList<>();
+    private String moveMessage;
+    private String turnMessage;
+    private String moveTopic = "/Group/13/Move";
+    private String turnTopic = "/Group/13/Turn";
 
 
     @Override
@@ -72,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
         Button Back = findViewById(R.id.buttonBack);
         Button Left = findViewById(R.id.buttonLeft);
         Button Right = findViewById(R.id.buttonRight);
-        Button Stop = findViewById(R.id.buttonStop);
         Switch Cruise = (Switch)findViewById(R.id.switchCruise);
         mCameraView = findViewById(R.id.imageView);
 
@@ -100,16 +102,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-        Stop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //When "Stop" is clicked the car stop
-                String message = "Stop";
-                mMqttClient.publish(controlTopic, message, 1, null);
-
-            }
-        });
 
 
         Ahead.setOnTouchListener(new View.OnTouchListener() {
@@ -251,17 +243,17 @@ public class MainActivity extends AppCompatActivity {
                         mCameraView.setImageBitmap(bm);
                     }
                     if(topic.equals(leftDistanceTopic)){
-                        int progress = (Integer.parseInt(message.toString())/30)*100;
+                        int progress = ((Integer.parseInt(message.toString())-5)/10)*100;
 
                         leftBar.setProgress(progress);
                     }
                     if(topic.equals(rightDistanceTopic)){
-                        int progress = (Integer.parseInt(message.toString())/30)*100;
+                        int progress = ((Integer.parseInt(message.toString())-5)/10)*100;
 
                         rightBar.setProgress(progress);
                     }
                     if(topic.equals(frontDistanceTopic)){
-                        int progress = (Integer.parseInt(message.toString())/30)*100;
+                        int progress = ((Integer.parseInt(message.toString())-5)/10)*100;
 
                         middleBar.setProgress(progress);
                     }
@@ -273,6 +265,79 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+    public float rectifier(float Percent) {
+        ArrayList<Float> Pivot = new ArrayList<>();
+
+        for (float i = 0; i <= 100; i = i + 10) {
+            Pivot.add(i);
+            for (float y : Pivot) {
+                if (y >= Percent) {
+                    Percent = y;
+                    break;
+                }
+            }
+        }
+        return Percent;
+    }
+
+    public float pack(Queue<Float> dataPackage) {
+        float x1 = 0;
+        float x2 = 0;
+        float x3 = 0;
+        if (!(dataPackage.isEmpty())) {
+            x1 = dataPackage.poll();
+            x2 = dataPackage.poll();
+            x3 = dataPackage.poll();
+        }
+
+        if (x1 == x2 && x2 == x3) {
+            return x1;
+        }
+
+        return x3;
+    }
+
+    public void onJoystickMoved(float xPercent, float yPercent, int id) {
+        yPercent = 0 - (yPercent * 100);
+        xPercent = xPercent * 90;
+
+        if (yPercent < 0) {
+            yPercent = 0 - rectifier(Math.abs(yPercent));
+        } else {
+            yPercent = rectifier(yPercent);
+        }
+        if (xPercent < 0) {
+            xPercent = 0 - rectifier(Math.abs(xPercent));
+        } else {
+            xPercent = rectifier(xPercent);
+        }
+        xDataPackage.offer(0.0f);
+        yDataPackage.offer(0.0f);
+        xDataPackage.offer(0.0f);
+        yDataPackage.offer(0.0f);
+        xDataPackage.offer(xPercent);
+        yDataPackage.offer(yPercent);
+        xPercent = pack(xDataPackage);
+        yPercent = pack(yDataPackage);
+
+        /*JoystickView joystickView = new JoystickView(Context context);
+        float x1, x2, y1, y2;
+        double dis;
+        x1 = joystickView.getX();
+        x2 = joystickView.centerX();
+        y1 = joystickView.getY();
+        y2 = joystickView.centerY();
+        dis = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));*/
+
+
+        moveMessage = String.valueOf(yPercent);
+        turnMessage = String.valueOf(xPercent);
+        Log.d("move", moveMessage + " " + turnMessage);
+
+            mMqttClient.publish(moveTopic, moveMessage, 0, null);
+            mMqttClient.publish(turnTopic, turnMessage, 0, null);
+
     }
 
 }

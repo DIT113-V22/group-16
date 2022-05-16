@@ -3,18 +3,28 @@
 #include <vector>
 #include <MQTT.h>
 #include <WiFi.h>
-
+#include <String.h>
 
 #ifdef __SMCE__
 #include <OV767X.h>
 #endif
 
+//Headers
+void controlBus(String topic, String message);
+void rotate(int degrees, float speed);
+void carBrake();
+void publishDistance();
+void ctrlHeading(String message);
+void obstacleAvoidance( bool alleywayBacking);
+void go(long centimeters, float speed);
+void cruiseControl();
+
 MQTTClient mqtt;
 WiFiClient net;
-const auto mqttBrokerUrl = "192.168.0.242";
+const auto mqttBrokerUrl = "127.0.0.1";
 
-const char ssid[] = "admin";
-const char pass[] = "emqx";
+const char ssid[] = "darma";
+const char pass[] = "123456";
 
 std::vector<char> frameBuffer;
 
@@ -43,16 +53,17 @@ const int BrakeDistance = 100;  // obstacle avoidance distance
 const int crackDistance = 20;
 const long backDistance = -50;
 
-const float cruiseSpeed = 1.0;
-const float speedToTurn = 0.2;
-const int degreesToTurn = 90;
+const float cruiseSpeed = 1.3;
+const float speedToTurn = 0.4;
+const int degreesToTurn = 30;
+
+const int softBreak = 150;
+const int hardBreak = 60;
 
 //Mqtt topics
-
 const String controlTopic = "/Group/16/Control";
-const String streamTopic = "/Group/16/Camera";
+const char *streamTopic = "/Group/16/Camera";
 const String distanceTopic = "/Group/16/Distance";
-
 
 
 ArduinoRuntime arduinoRuntime;
@@ -84,7 +95,6 @@ GP2D120 infraBack(arduinoRuntime, BACK_INFRA_PIN);
 
 SmartCar car(arduinoRuntime, control, gyroscope, leftOdometer, rightOdometer);
 
-bool updateFlag = false;
 bool forward = true;
 bool cruiseFlag = false;
 
@@ -100,24 +110,21 @@ void setup() {
 
     //connect to wifi
     WiFi.begin(ssid, pass);
-    mqtt.begin(mqttBrokerUrl, 1883, net);
-
+    mqtt.begin(mqttBrokerUrl, 11883, net);
+    
     Serial.println("Connecting to WiFi...");
-        auto wifiStatus = WiFi.status();
-        while (wifiStatus != WL_CONNECTED && wifiStatus != WL_NO_SHIELD) {
-            Serial.println(wifiStatus);
-            Serial.print(".");
-            delay(1000);
-            wifiStatus = WiFi.status();
-        }
-        
+    auto wifiStatus = WiFi.status();
+    while (wifiStatus != WL_CONNECTED && wifiStatus != WL_NO_SHIELD) {
+        Serial.println(wifiStatus);
+        Serial.print(".");
+        delay(1000);
+        wifiStatus = WiFi.status();
+    }
     while (!mqtt.connect("SmartCarMQTT", "SmartCarMQTT", " ")) {
         Serial.println("MQTT Connecting...");
         delay(1000);
     }
-    if (mqtt.connected()) {
-        Serial.println("Connected to MQTT Broker");
-    }
+    
 }
 
 
@@ -125,62 +132,61 @@ void setup() {
 void loop() {
     if(mqtt.connected()){
         mqtt.loop();
-        const auto currentTime = millis();
-
-        /*#ifdef __SMCE__
-        cameraStream();
-        #endif*/
-
-        publishDistance();
-
-        mqtt.subscribe(controlTopic, 1); //QoS 1
-        mqtt.onMessage([](String topic, String message){
-            car.update();
-            if(topic.compareTo(controlTopic) == 0){
-                if(message == "Cruise"){
-                    cruiseControl();
-                } else if(message == "Stop"){
-                    carBrake();
-                }
-                else ctrlHeading(message);
-                
-
-                if(car.getSpeed() == 0 && cruiseFlag)
-                {
-                    if(ultraFront.getDistance() < BrakeDistance && ultraFront.getDistance() > 0)
-                    {
-                        rotate(degreesToTurn, speedToTurn);
-                        car.setSpeed(cruiseSpeed);
-                        car.setAngle(0);
-                        car.update();
-                    }
-                }
-
-                if((ultraFront.getDistance() > 0 && ultraFront.getDistance() < crackDistance) && car.getSpeed() < 0.01 && cruiseFlag)
-                {
-                    Serial.println("go back");
-                    go(backDistance, cruiseSpeed);
-                    rotate(degreesToTurn, speedToTurn);
-                    car.setSpeed(cruiseSpeed);
-                    car.setAngle(0);
-                    car.update();
-                } 
-            }
             
+        publishDistance();
+        
+        mqtt.subscribe(controlTopic, 1); //QoS 1
+
+        mqtt.onMessage([](String receivedTopic, String receivedMessage){
+            controlBus(receivedTopic, receivedMessage);                     
         });
+        controlBus("s", "s");
     }
 }
+
+
+//Redirect different controls
+void controlBus(String topic, String message){
+    car.update();
+
+    
+    String control = "Stop";
+
+    if(topic.compareTo(controlTopic) == 0){
+        
+        control = message;  
+        if(control.compareTo("Cruise") == 0){
+            car.enableCruiseControl(5.0F, 0.02F, 10.0F, 50);
+            cruiseFlag = true;
+        }
+        else if(control.compareTo("Stop") && cruiseFlag){
+            carBrake();
+            cruiseFlag = false;
+        } 
+        else {
+            ctrlHeading(control);
+            cruiseFlag = false;
+        }        
+    }
+    if(cruiseFlag){
+        cruiseControl();
+    }    
+    
+     
+}
+
 
 //mqtt sensor distance
 void publishDistance(){
     car.update();
-
     const auto leftDistance = String(infraLeft.getDistance());
     const auto rightDistance = String(infraRight.getDistance());
     const auto frontDistance = String(infraFront.getDistance());
-    mqtt.publish("/Group/16/Distance/Left", leftDistance);
-    mqtt.publish("/Group/16/Distance/Right", rightDistance);
-    mqtt.publish("/Group/16/Distance/Front", frontDistance);
+    /*
+    mqtt.publish("Group/16/Distance/Left", leftDistance);
+    mqtt.publish("Group/16/Distance/Right", rightDistance);
+    mqtt.publish("Group/16/Distance/Front", frontDistance);
+    */
 }
 
 
@@ -192,15 +198,19 @@ void carBrake()
     car.setAngle(0);
 }
 
-void cruiseControl()
-{
+void cruiseControl(){
     car.update();
-    car.enableCruiseControl(5.0F, 0.02F, 10.0F, 50);
-    car.setSpeed(cruiseSpeed);
-    car.setAngle(0);    
-    updateFlag = true;
-    cruiseFlag = true;
-    forward = true;
+    Serial.println(ultraFront.getDistance());
+    if(ultraFront.getDistance() <= softBreak && ultraFront.getDistance() > hardBreak){
+        obstacleAvoidance(false);
+    } else if(ultraFront.getDistance() <=  hardBreak && ultraFront.getDistance() > 0){
+        obstacleAvoidance(true);
+    } else {
+        car.setSpeed(cruiseSpeed);
+        car.setAngle(0); 
+    }
+     
+
 }
 
 void rotate(int degrees, float speed)
@@ -256,7 +266,8 @@ void rotate(int degrees, float speed)
     }
     car.setSpeed(0);
 }
-/*
+
+#ifdef __SMCE__
 void cameraStream(){
     const auto currentTime = millis();
     static auto previousFrame = 0UL;
@@ -265,23 +276,27 @@ void cameraStream(){
         Camera.readFrame(frameBuffer.data());
         mqtt.publish(streamTopic, frameBuffer.data(), frameBuffer.size(), false, 0);
   }
-}*/
+}
+#endif
 
 void ctrlHeading(String message){
     if(message.compareTo("Left") == 0){
         car.setSpeed(forwardSpeed);
         car.setAngle(leftDegrees);
         forward = false;
-    } else if( message.compareTo("Right") == 0){
+    } 
+    else if( message.compareTo("Right") == 0){
         car.setSpeed(forwardSpeed);
         car.setAngle(rightDegrees);
         forward = false;
-    } else if( message.compareTo("Forward") == 0){
+    } 
+    else if( message.compareTo("Forward") == 0){
         car.setSpeed(forwardSpeed);
         car.setAngle(0);
-        obstacleAvoidance(BrakeDistance);
+        obstacleAvoidance(false);
         forward = true;
-    } else if(message.compareTo("Backward") == 0){
+    }
+    else if(message.compareTo("Backward") == 0){
         if(car.getSpeed() != 0) {
             carBrake();
         }
@@ -290,47 +305,60 @@ void ctrlHeading(String message){
             car.setAngle(0);
         }   
         forward = false;   
-    } else{
+    } 
+    else {
         carBrake();
     }
 
     
 }
 
-void obstacleAvoidance(int dis)
+void obstacleAvoidance( bool alleywayBacking)
 {
-    int distanceFromObjects = ultraFront.getDistance();
-    // three levels brake system
-    if(cruiseFlag) {
-        if(distanceFromObjects < dis * 3 && distanceFromObjects > dis * 2) {
-            car.setSpeed(cruiseSpeed * 0.5);
-        }
-        if(distanceFromObjects < dis * 2 && distanceFromObjects > dis) {
-            car.setSpeed(cruiseSpeed * 0.2);
-        } 
-    }
-    else {
-        if(distanceFromObjects < dis * 3 && distanceFromObjects > dis * 2) {
-            car.setSpeed(forwardSpeed * 0.5);
-        }
-        if(distanceFromObjects < dis * 2 && distanceFromObjects > dis) {
-            car.setSpeed(forwardSpeed * 0.2);
-        }
-    }
+    car.update();
+    int distFront = ultraFront.getDistance();
+    int stopFront = infraFront.getDistance();
+    int distLeft = infraLeft.getDistance();
+    int distRight = infraRight.getDistance();
+    
 
-    if(distanceFromObjects < dis && distanceFromObjects > 0)
-    {
-        car.setSpeed(stoppingSpeed);
+    //backing up if the car is in an unturnable corridor
+    if (alleywayBacking){
+        Serial.println("yeet");
+        go(backDistance, backwardSpeed); 
+        if(distLeft > 0 && distRight > 0){
+            obstacleAvoidance( true);
+        }
+        else if(distLeft == 0){
+            rotate(-20, speedToTurn);
+            alleywayBacking = false;
+        }
+        else{
+            rotate(20, speedToTurn);
+            alleywayBacking = false;
+        }
     }
-    // Serial.println("init dis");
-    Serial.println(distanceFromObjects);
+    else{
+        if(distFront < softBreak){
+            car.update();         
+            if(distLeft > 0 && distRight > 0){
+                obstacleAvoidance(true);
+            }else if( distLeft == 0 ){
+                rotate(-20, speedToTurn);
+            }else{
+                rotate(20, speedToTurn);
+            }
+        }
+    }
+    
+
 }
 
 void go(long centimeters, float speed)
  {
      if (centimeters == 0)
      {
-         return;
+        return;
      }
      // Ensure the speed is towards the correct direction
      speed = smartcarlib::utils::getAbsolute(speed) * ((centimeters < 0) ? -1 : 1);
