@@ -9,6 +9,15 @@
 #include <OV767X.h>
 #endif
 
+//Headers
+void controlBus(String topic, String message);
+void rotate(int degrees, float speed);
+void carBrake();
+void publishDistance();
+void ctrlHeading(String message);
+void obstacleAvoidance( bool alleywayBacking);
+void go(long centimeters, float speed);
+
 MQTTClient mqtt;
 WiFiClient net;
 const auto mqttBrokerUrl = "192.168.0.242";
@@ -51,10 +60,9 @@ const int softBreak = 150;
 
 
 //Mqtt topics
-const String controlTopic = "Group/16/Control";
-const String streamTopic = "Group/16/Camera";
-const String distanceTopic = "Group/16/Distance";
-
+const String controlTopic = "/Group/16/Control";
+const char *streamTopic = "/Group/16/Camera";
+const String distanceTopic = "/Group/16/Distance";
 
 
 ArduinoRuntime arduinoRuntime;
@@ -118,18 +126,17 @@ void setup() {
 void loop() {
     if(mqtt.connected()){
         mqtt.loop();
-        const auto currentTime = millis();
-        String message;
-        String topic;
+        String message = "Cruise";
+        String topic = controlTopic;
 
 
         publishDistance();
-
+        /*
         mqtt.subscribe(controlTopic, 1); //QoS 1
         mqtt.onMessage([&topic, &message](String receivedTopic, String receivedMessage){
             topic = receivedTopic;
             message = receivedMessage;                      
-        });
+        });*/
 
         controlBus(topic, message);    
 
@@ -148,20 +155,21 @@ void controlBus(String topic, String message){
     if(message != NULL){
         String control = "Stop";
         if(topic.compareTo(controlTopic) == 0){
-            control = message;       
+            control = message;  
+            if(control.compareTo("Cruise") == 0){
+                cruiseControl();
+                cruiseFlag = true;
+            }
+            else if(control.compareTo("Stop") && cruiseFlag){
+                carBrake();
+                cruiseFlag = false;
+            } 
+            else {
+                ctrlHeading(control);
+                cruiseFlag = false;
+            }        
         }
-        if(control.compareTo("Cruise") == 0){
-            cruiseControl();
-            cruiseFlag = true;
-        }
-        else if(control.compareTo("Stop") && cruiseFlag){
-            carBrake();
-            cruiseFlag = false;
-        } 
-        else {
-            ctrlHeading(control);
-            cruiseFlag = false;
-        }   
+        
     }
      
 }
@@ -173,10 +181,14 @@ void publishDistance(){
     const auto leftDistance = String(infraLeft.getDistance());
     const auto rightDistance = String(infraRight.getDistance());
     const auto frontDistance = String(infraFront.getDistance());
-
+    Serial.println(leftDistance);
+    Serial.println(rightDistance);
+    Serial.println(frontDistance);
+    /*
     mqtt.publish("Group/16/Distance/Left", leftDistance);
     mqtt.publish("Group/16/Distance/Right", rightDistance);
     mqtt.publish("Group/16/Distance/Front", frontDistance);
+    */
 }
 
 
@@ -329,11 +341,11 @@ void obstacleAvoidance( bool alleywayBacking)
         }
         else if(distLeft == 0){
             rotate(-90, speedToTurn);
-            alleywayBacking == false;
+            alleywayBacking = false;
         }
         else{
             rotate(90, speedToTurn);
-            alleywayBacking == false;
+            alleywayBacking = false;
         }
     }
     else{
