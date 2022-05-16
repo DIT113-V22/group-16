@@ -119,6 +119,10 @@ void setup() {
             delay(1000);
             wifiStatus = WiFi.status();
         }
+    while (!mqtt.connect("SmartCarMQTT", "SmartCarMQTT", " ")) {
+        Serial.println("MQTT Connecting...");
+        delay(1000);
+    }
 }
 
 
