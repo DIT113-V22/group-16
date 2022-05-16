@@ -188,7 +188,7 @@ void carBrake()
     car.setAngle(0);
 }
 
-bool cruiseControl()
+void cruiseControl()
 {
     car.update();
     if(!cruiseFlag){
@@ -262,6 +262,7 @@ void rotate(int degrees, float speed)
     car.setSpeed(0);
 }
 
+#ifdef __SMCE__
 void cameraStream(){
     const auto currentTime = millis();
     static auto previousFrame = 0UL;
@@ -271,6 +272,7 @@ void cameraStream(){
         mqtt.publish(streamTopic, frameBuffer.data(), frameBuffer.size(), false, 0);
   }
 }
+#endif
 
 void ctrlHeading(String message){
     if(message.compareTo("Left") == 0){
