@@ -3,7 +3,7 @@
 #include <vector>
 #include <MQTT.h>
 #include <WiFi.h>
-
+#include <String.h>
 
 #ifdef __SMCE__
 #include <OV767X.h>
@@ -21,10 +21,10 @@ void cruiseControl();
 
 MQTTClient mqtt;
 WiFiClient net;
-const auto mqttBrokerUrl = "192.168.0.242";
+const auto mqttBrokerUrl = "127.0.0.1";
 
-const char ssid[] = "admin";
-const char pass[] = "hivemq";
+const char ssid[] = "darma";
+const char pass[] = "123456";
 
 std::vector<char> frameBuffer;
 
@@ -54,11 +54,11 @@ const int crackDistance = 20;
 const long backDistance = -50;
 
 const float cruiseSpeed = 1.3;
-const float speedToTurn = 0.7;
+const float speedToTurn = 0.4;
 const int degreesToTurn = 30;
 
 const int softBreak = 150;
-
+const int hardBreak = 60;
 
 //Mqtt topics
 const String controlTopic = "/Group/16/Control";
@@ -110,20 +110,21 @@ void setup() {
 
     //connect to wifi
     WiFi.begin(ssid, pass);
-    mqtt.begin(mqttBrokerUrl, 1883, net);
+    mqtt.begin(mqttBrokerUrl, 11883, net);
     
     Serial.println("Connecting to WiFi...");
-        auto wifiStatus = WiFi.status();
-        while (wifiStatus != WL_CONNECTED && wifiStatus != WL_NO_SHIELD) {
-            Serial.println(wifiStatus);
-            Serial.print(".");
-            delay(1000);
-            wifiStatus = WiFi.status();
-        }
+    auto wifiStatus = WiFi.status();
+    while (wifiStatus != WL_CONNECTED && wifiStatus != WL_NO_SHIELD) {
+        Serial.println(wifiStatus);
+        Serial.print(".");
+        delay(1000);
+        wifiStatus = WiFi.status();
+    }
     while (!mqtt.connect("SmartCarMQTT", "SmartCarMQTT", " ")) {
         Serial.println("MQTT Connecting...");
         delay(1000);
     }
+    
 }
 
 
@@ -131,50 +132,46 @@ void setup() {
 void loop() {
     if(mqtt.connected()){
         mqtt.loop();
-        String message;
-        String topic;
-
-
+            
         publishDistance();
         
         mqtt.subscribe(controlTopic, 1); //QoS 1
-        mqtt.onMessage([&topic, &message](String receivedTopic, String receivedMessage){
-            topic = receivedTopic;
-            message = receivedMessage;                      
+
+        mqtt.onMessage([](String receivedTopic, String receivedMessage){
+            controlBus(receivedTopic, receivedMessage);                     
         });
-
-        controlBus(topic, message);    
-
+        controlBus("s", "s");
     }
-    else{
-        carBrake();
-    }
-    delay(10);
 }
 
 
 //Redirect different controls
 void controlBus(String topic, String message){
     car.update();
+
     
-    if(message != NULL){
-        String control = "Stop";
-        if(topic.compareTo(controlTopic) == 0){
-            control = message;  
-            if(control.compareTo("Cruise") == 0){
-                cruiseControl();
-            }
-            else if(control.compareTo("Stop") && cruiseFlag){
-                carBrake();
-                cruiseFlag = false;
-            } 
-            else {
-                ctrlHeading(control);
-                cruiseFlag = false;
-            }        
-        }
+    String control = "Stop";
+
+    if(topic.compareTo(controlTopic) == 0){
         
+        control = message;  
+        if(control.compareTo("Cruise") == 0){
+            car.enableCruiseControl(5.0F, 0.02F, 10.0F, 50);
+            cruiseFlag = true;
+        }
+        else if(control.compareTo("Stop") && cruiseFlag){
+            carBrake();
+            cruiseFlag = false;
+        } 
+        else {
+            ctrlHeading(control);
+            cruiseFlag = false;
+        }        
     }
+    if(cruiseFlag){
+        cruiseControl();
+    }    
+    
      
 }
 
@@ -185,9 +182,6 @@ void publishDistance(){
     const auto leftDistance = String(infraLeft.getDistance());
     const auto rightDistance = String(infraRight.getDistance());
     const auto frontDistance = String(infraFront.getDistance());
-    Serial.println(leftDistance);
-    Serial.println(rightDistance);
-    Serial.println(frontDistance);
     /*
     mqtt.publish("Group/16/Distance/Left", leftDistance);
     mqtt.publish("Group/16/Distance/Right", rightDistance);
@@ -204,18 +198,13 @@ void carBrake()
     car.setAngle(0);
 }
 
-void cruiseControl()
-{
+void cruiseControl(){
     car.update();
-    if(!cruiseFlag){
-        car.enableCruiseControl(5.0F, 0.02F, 10.0F, 50);        
-        cruiseFlag = true;
-        forward = true;
-    }
-    
-
-    if(ultraFront.getDistance() < softBreak){
+    Serial.println(ultraFront.getDistance());
+    if(ultraFront.getDistance() <= softBreak && ultraFront.getDistance() > hardBreak){
         obstacleAvoidance(false);
+    } else if(ultraFront.getDistance() <=  hardBreak && ultraFront.getDistance() > 0){
+        obstacleAvoidance(true);
     } else {
         car.setSpeed(cruiseSpeed);
         car.setAngle(0); 
@@ -332,35 +321,32 @@ void obstacleAvoidance( bool alleywayBacking)
     int distLeft = infraLeft.getDistance();
     int distRight = infraRight.getDistance();
     
-    if(stopFront > 0){
-        alleywayBacking = true;
-    }
-
 
     //backing up if the car is in an unturnable corridor
     if (alleywayBacking){
+        Serial.println("yeet");
+        go(backDistance, backwardSpeed); 
         if(distLeft > 0 && distRight > 0){
-            go(backDistance, backwardSpeed);
             obstacleAvoidance( true);
         }
         else if(distLeft == 0){
-            rotate(-90, speedToTurn);
+            rotate(-20, speedToTurn);
             alleywayBacking = false;
         }
         else{
-            rotate(90, speedToTurn);
+            rotate(20, speedToTurn);
             alleywayBacking = false;
         }
     }
     else{
         if(distFront < softBreak){
-            car.update();            
+            car.update();         
             if(distLeft > 0 && distRight > 0){
                 obstacleAvoidance(true);
             }else if( distLeft == 0 ){
-                rotate(-30, speedToTurn);
+                rotate(-20, speedToTurn);
             }else{
-                rotate(30, speedToTurn);
+                rotate(20, speedToTurn);
             }
         }
     }
