@@ -17,6 +17,7 @@ void publishDistance();
 void ctrlHeading(String message);
 void obstacleAvoidance( bool alleywayBacking);
 void go(long centimeters, float speed);
+void cruiseControl();
 
 MQTTClient mqtt;
 WiFiClient net;
