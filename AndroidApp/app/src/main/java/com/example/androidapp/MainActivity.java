@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements JoystickListener{
     static String PASSWORD = "emqx";
     private final String topic = "/Group/16";
     private final String controlTopic = "/Group/16/Control";
-    private final String streamTopic = "/Group/16/Stream";
+    private final String streamTopic = "/Group/16/Camera";
 
     private final String leftDistanceTopic = "/Group/16/Distance/Left";
     private final String rightDistanceTopic = "/Group/16/Distance/Right";
@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity implements JoystickListener{
 
     private boolean isConnected = false;
 
-    int IMAGE_WIDTH = 411;
-    int IMAGE_HEIGHT = 250;
+    int IMAGE_WIDTH = 320;
+    int IMAGE_HEIGHT = 240;
     private ImageView mCameraView;
     private ProgressBar leftBar;
     private ProgressBar rightBar;
@@ -229,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements JoystickListener{
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
 
                     if (topic.equals(streamTopic)) {
+                        Log.e("Debug","Stream start");
                         final Bitmap bm = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
 
                         final byte[] payload = message.getPayload();

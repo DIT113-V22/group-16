@@ -35,7 +35,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="25dp"
-        android:layout_marginTop="297dp"
+        android:layout_marginTop="350dp"
         android:layout_marginEnd="275dp"
         android:layout_marginBottom="413dp"
         android:max="100"
@@ -59,7 +59,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="150dp"
-        android:layout_marginTop="300dp"
+        android:layout_marginTop="350dp"
         android:layout_marginEnd="150dp"
         android:layout_marginBottom="416dp"
         android:max="100"
@@ -82,7 +82,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="275dp"
-        android:layout_marginTop="297dp"
+        android:layout_marginTop="350dp"
         android:layout_marginEnd="25dp"
         android:layout_marginBottom="414dp"
         android:max="100"
@@ -144,14 +144,15 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.745" />
 
+
     <Switch
         android:id="@+id/switchCruise"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="21dp"
-        android:layout_marginBottom="318dp"
+        android:layout_marginEnd="23dp"
+        android:layout_marginBottom="244dp"
         android:minHeight="48dp"
         android:text="Cruise"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -160,7 +161,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.516" />
-
 
     <ImageView
         android:id="@+id/imageView"
@@ -176,7 +176,6 @@
         android:layout_marginTop="0dp"
         android:layout_marginEnd="1dp"
         android:layout_marginRight="1dp"
-        android:onClick="enableStopButton"
         android:contentDescription="@string/camera_view" />
 
 
