@@ -39,7 +39,6 @@
         android:layout_marginEnd="275dp"
         android:layout_marginBottom="413dp"
         android:max="100"
-        android:progress="0"
         android:progressTint="#ff0000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -63,7 +62,6 @@
         android:layout_marginEnd="150dp"
         android:layout_marginBottom="416dp"
         android:max="100"
-        android:progress="0"
         android:progressTint="#ff0000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -86,7 +84,6 @@
         android:layout_marginEnd="25dp"
         android:layout_marginBottom="414dp"
         android:max="100"
-        android:progress="0"
         android:progressTint="#ff0000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -120,10 +117,15 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.9" />
 
+
     <Button
         android:id="@+id/buttonAhead"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="161dp"
+        android:layout_marginBottom="310dp"
         android:text="Ahead"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -136,6 +138,10 @@
         android:id="@+id/buttonRight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginBottom="312dp"
         android:text="Right"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -143,7 +149,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.745" />
-
 
     <Switch
         android:id="@+id/switchCruise"

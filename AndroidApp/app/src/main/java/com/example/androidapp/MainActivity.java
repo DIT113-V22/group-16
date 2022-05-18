@@ -204,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements JoystickListener{
                     Toast.makeText(getApplicationContext(), successfulConnection, Toast.LENGTH_SHORT).show();
 
                     mMqttClient.subscribe(leftDistanceTopic, QOS, null);
+                    Log.e("sub","test");
                     mMqttClient.subscribe(rightDistanceTopic, QOS, null);
                     mMqttClient.subscribe(frontDistanceTopic, QOS, null);
                     mMqttClient.subscribe(streamTopic, QOS, null);
@@ -244,17 +245,17 @@ public class MainActivity extends AppCompatActivity implements JoystickListener{
                         mCameraView.setImageBitmap(bm);
                     }
                     if(topic.equals(leftDistanceTopic)){
-                        int progress = ((Integer.parseInt(message.toString())-5)/10)*100;
+                        int progress = (Integer.parseInt(message.toString())*10);
 
                         leftBar.setProgress(progress);
                     }
                     if(topic.equals(rightDistanceTopic)){
-                        int progress = ((Integer.parseInt(message.toString())-5)/10)*100;
+                        int progress = (Integer.parseInt(message.toString())*10);
 
                         rightBar.setProgress(progress);
                     }
                     if(topic.equals(frontDistanceTopic)){
-                        int progress = ((Integer.parseInt(message.toString())-5)/10)*100;
+                        int progress = (Integer.parseInt(message.toString())*10);
 
                         middleBar.setProgress(progress);
                     }

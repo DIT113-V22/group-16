@@ -24,7 +24,7 @@ WiFiClient net;
 const auto mqttBrokerUrl = "127.0.0.1";
 const auto oneSecond = 1000UL;
 
-const char ssid[] = "darma";
+const char ssid[] = "admin";
 const char pass[] = "123456";
 
 std::vector<char> frameBuffer;
