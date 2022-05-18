@@ -88,16 +88,14 @@ public class MainActivity extends AppCompatActivity implements JoystickListener{
             public void onCheckedChanged(CompoundButton Cruise, boolean isChecked) {
                 String cruiseMessage = "Cruise";
                 //Prevent the listener from triggering during initialization
-                if (Cruise.isPressed()) {
+                if (isChecked) {
 
                         mMqttClient.publish(controlTopic, cruiseMessage, 1, null);
 
-                    return;
                 } else {
                     //return to use manual control;
                     String message = "Stop";
                         mMqttClient.publish(controlTopic, message, 1, null);
-
                 }
             }
         });
@@ -245,19 +243,19 @@ public class MainActivity extends AppCompatActivity implements JoystickListener{
                         mCameraView.setImageBitmap(bm);
                     }
                     if(topic.equals(leftDistanceTopic)){
-                        int progress = (Integer.parseInt(message.toString())*10);
+                      int progress = Integer.parseInt(message.toString())*10;
 
-                        leftBar.setProgress(progress);
+                       leftBar.setProgress(progress);
                     }
                     if(topic.equals(rightDistanceTopic)){
-                        int progress = (Integer.parseInt(message.toString())*10);
+                        int progress = Integer.parseInt(message.toString())*10;
 
-                        rightBar.setProgress(progress);
+                       rightBar.setProgress(progress);
                     }
                     if(topic.equals(frontDistanceTopic)){
-                        int progress = (Integer.parseInt(message.toString())*10);
+                        int progress = Integer.parseInt(message.toString())*10;
 
-                        middleBar.setProgress(progress);
+                      middleBar.setProgress(progress);
                     }
                 }
 

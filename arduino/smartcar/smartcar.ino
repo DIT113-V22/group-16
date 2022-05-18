@@ -165,7 +165,8 @@ void controlBus(String topic, String message){
             cruiseFlag = true;
         }
         else if(control.compareTo("Stop") && cruiseFlag){
-            carBrake();
+
+            ctrlHeading(control);
             cruiseFlag = false;
         } 
         else {
@@ -201,6 +202,7 @@ void publishDistance(){
 // Car control
 void carBrake()
 {
+    car.update();
     car.setSpeed(0);
     car.setAngle(0);
 }
@@ -311,7 +313,11 @@ void ctrlHeading(String message){
             car.setAngle(0);
         }   
         forward = false;   
-    } 
+    }
+    else if( message.compareTo("Stop") == 0 ){
+      car.setSpeed(0);
+      obstacleAvoidance(false);
+    }
     else {
         carBrake();
     }
