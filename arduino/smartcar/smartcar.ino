@@ -3,7 +3,6 @@
 #include <vector>
 #include <MQTT.h>
 #include <WiFi.h>
-#include <string.h>
 
 #ifdef __SMCE__
 #include <OV767X.h>
