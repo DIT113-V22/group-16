@@ -23,20 +23,16 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import static com.example.androidapp.JoystickView.*;
-
-import java.util.ArrayList;
-import java.util.Queue;
-import java.util.LinkedList;
 
 
-public class MainActivity extends AppCompatActivity implements JoystickListener{
+
+public class MainActivity extends AppCompatActivity{
     private MqttClient mMqttClient;
     private static final String MQTT_SERVER = "tcp://192.168.0.242:1883";
     private static final String TAG = "SmartCarMqttController";
     private static final int QOS = 1;
     static String USERNAME = "admin";
-    static String PASSWORD = "emqx";
+    static String PASSWORD = "hivemq";
     private final String topic = "/Group/16";
     private final String controlTopic = "/Group/16/Control";
     private final String streamTopic = "/Group/16/Camera";
@@ -53,12 +49,6 @@ public class MainActivity extends AppCompatActivity implements JoystickListener{
     private ProgressBar leftBar;
     private ProgressBar rightBar;
     private ProgressBar middleBar;
-    public Queue<Float> yDataPackage = new LinkedList<>();
-    public Queue<Float> xDataPackage = new LinkedList<>();
-    private String moveMessage;
-    private String turnMessage;
-    private String moveTopic = "/Group/13/Move";
-    private String turnTopic = "/Group/13/Turn";
 
 
     @Override
@@ -192,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements JoystickListener{
 
     private void connectToMqttBroker() {
         if (!isConnected) {
-            mMqttClient.connect(TAG, "", new IMqttActionListener() {
+            mMqttClient.connect(TAG, PASSWORD, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     isConnected = true;
@@ -265,79 +255,6 @@ public class MainActivity extends AppCompatActivity implements JoystickListener{
                 }
             });
         }
-    }
-    public float rectifier(float Percent) {
-        ArrayList<Float> Pivot = new ArrayList<>();
-
-        for (float i = 0; i <= 100; i = i + 10) {
-            Pivot.add(i);
-            for (float y : Pivot) {
-                if (y >= Percent) {
-                    Percent = y;
-                    break;
-                }
-            }
-        }
-        return Percent;
-    }
-
-    public float pack(Queue<Float> dataPackage) {
-        float x1 = 0;
-        float x2 = 0;
-        float x3 = 0;
-        if (!(dataPackage.isEmpty())) {
-            x1 = dataPackage.poll();
-            x2 = dataPackage.poll();
-            x3 = dataPackage.poll();
-        }
-
-        if (x1 == x2 && x2 == x3) {
-            return x1;
-        }
-
-        return x3;
-    }
-
-    public void onJoystickMoved(float xPercent, float yPercent, int id) {
-        yPercent = 0 - (yPercent * 100);
-        xPercent = xPercent * 90;
-
-        if (yPercent < 0) {
-            yPercent = 0 - rectifier(Math.abs(yPercent));
-        } else {
-            yPercent = rectifier(yPercent);
-        }
-        if (xPercent < 0) {
-            xPercent = 0 - rectifier(Math.abs(xPercent));
-        } else {
-            xPercent = rectifier(xPercent);
-        }
-        xDataPackage.offer(0.0f);
-        yDataPackage.offer(0.0f);
-        xDataPackage.offer(0.0f);
-        yDataPackage.offer(0.0f);
-        xDataPackage.offer(xPercent);
-        yDataPackage.offer(yPercent);
-        xPercent = pack(xDataPackage);
-        yPercent = pack(yDataPackage);
-
-        /*JoystickView joystickView = new JoystickView(Context context);
-        float x1, x2, y1, y2;
-        double dis;
-        x1 = joystickView.getX();
-        x2 = joystickView.centerX();
-        y1 = joystickView.getY();
-        y2 = joystickView.centerY();
-        dis = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));*/
-
-
-        moveMessage = String.valueOf(yPercent);
-        turnMessage = String.valueOf(xPercent);
-        Log.d("move", moveMessage + " " + turnMessage);
-
-            mMqttClient.publish(moveTopic, moveMessage, 0, null);
-            mMqttClient.publish(turnTopic, turnMessage, 0, null);
-
     }
 
 }

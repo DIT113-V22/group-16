@@ -21,11 +21,11 @@ void cruiseControl();
 
 MQTTClient mqtt;
 WiFiClient net;
-const auto mqttBrokerUrl = "127.0.0.1";
+const auto mqttBrokerUrl = "192.168.0.242";
 const auto oneSecond = 1000UL;
 
 const char ssid[] = "admin";
-const char pass[] = "123456";
+const char pass[] = "hivemq";
 
 std::vector<char> frameBuffer;
 
@@ -140,6 +140,7 @@ void loop() {
         #endif
 
         publishDistance();
+        
         mqtt.subscribe(controlTopic, 1); //QoS 1
 
         mqtt.onMessage([](String receivedTopic, String receivedMessage){
@@ -313,10 +314,6 @@ void ctrlHeading(String message){
             car.setAngle(0);
         }   
         forward = false;   
-    }
-    else if( message.compareTo("Stop") == 0 ){
-      car.setSpeed(0);
-      obstacleAvoidance(false);
     }
     else {
         carBrake();
