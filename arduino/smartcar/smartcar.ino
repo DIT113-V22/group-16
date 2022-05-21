@@ -3,7 +3,7 @@
 #include <vector>
 #include <MQTT.h>
 #include <WiFi.h>
-#include <String.h>
+#include <string.h>
 
 #ifdef __SMCE__
 #include <OV767X.h>
@@ -22,8 +22,9 @@ void cruiseControl();
 MQTTClient mqtt;
 WiFiClient net;
 const auto mqttBrokerUrl = "127.0.0.1";
+const auto oneSecond = 1000UL;
 
-const char ssid[] = "darma";
+const char ssid[] = "admin";
 const char pass[] = "123456";
 
 std::vector<char> frameBuffer;
@@ -110,7 +111,7 @@ void setup() {
 
     //connect to wifi
     WiFi.begin(ssid, pass);
-    mqtt.begin(mqttBrokerUrl, 11883, net);
+    mqtt.begin(mqttBrokerUrl, 1883, net);
     
     Serial.println("Connecting to WiFi...");
     auto wifiStatus = WiFi.status();
@@ -132,9 +133,13 @@ void setup() {
 void loop() {
     if(mqtt.connected()){
         mqtt.loop();
-            
-        publishDistance();
+        const auto currentTime = millis();
         
+        #ifdef __SMCE__
+        cameraStream(currentTime);  // publish camera to frontend
+        #endif
+
+        publishDistance();
         mqtt.subscribe(controlTopic, 1); //QoS 1
 
         mqtt.onMessage([](String receivedTopic, String receivedMessage){
@@ -160,7 +165,8 @@ void controlBus(String topic, String message){
             cruiseFlag = true;
         }
         else if(control.compareTo("Stop") && cruiseFlag){
-            carBrake();
+
+            ctrlHeading(control);
             cruiseFlag = false;
         } 
         else {
@@ -178,15 +184,17 @@ void controlBus(String topic, String message){
 
 //mqtt sensor distance
 void publishDistance(){
-    car.update();
+  car.update();
+    
     const auto leftDistance = String(infraLeft.getDistance());
     const auto rightDistance = String(infraRight.getDistance());
     const auto frontDistance = String(infraFront.getDistance());
-    /*
-    mqtt.publish("Group/16/Distance/Left", leftDistance);
-    mqtt.publish("Group/16/Distance/Right", rightDistance);
-    mqtt.publish("Group/16/Distance/Front", frontDistance);
-    */
+     
+    mqtt.publish("/Group/16/Distance/Left", leftDistance);
+    mqtt.publish("/Group/16/Distance/Right", rightDistance);
+    mqtt.publish("/Group/16/Distance/Front", frontDistance);
+    Serial.println("front" + frontDistance);
+    
 }
 
 
@@ -194,6 +202,7 @@ void publishDistance(){
 // Car control
 void carBrake()
 {
+    car.update();
     car.setSpeed(0);
     car.setAngle(0);
 }
@@ -268,8 +277,7 @@ void rotate(int degrees, float speed)
 }
 
 #ifdef __SMCE__
-void cameraStream(){
-    const auto currentTime = millis();
+void cameraStream( unsigned long currentTime){
     static auto previousFrame = 0UL;
     if(currentTime - previousFrame >=65){
         previousFrame = currentTime;
@@ -305,7 +313,11 @@ void ctrlHeading(String message){
             car.setAngle(0);
         }   
         forward = false;   
-    } 
+    }
+    else if( message.compareTo("Stop") == 0 ){
+      car.setSpeed(0);
+      obstacleAvoidance(false);
+    }
     else {
         carBrake();
     }
