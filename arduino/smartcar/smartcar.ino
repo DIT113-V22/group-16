@@ -302,7 +302,6 @@ void ctrlHeading(String message){
     else if( message.compareTo("Forward") == 0){
         car.setSpeed(forwardSpeed);
         car.setAngle(0);
-        obstacleAvoidance(false);
         forward = true;
     }
     else if(message.compareTo("Backward") == 0){
