@@ -28,7 +28,7 @@ The team will work with agile development methods.
 ## Features of the App
 
 1. [Manual Control](https://github.com/DIT113-V22/group-16/wiki/Milestone-2#milestone-2-manual-control)
-2. Cruise Control
+2. [Cruise Control](https://github.com/DIT113-V22/group-16/wiki/Milestone-2#milestone-2-cruise-control)
 3. [Obstacle Avoidance](https://github.com/DIT113-V22/group-16/wiki/Milestone-1#milestone-1-obstacle-avoidance)
 4. Obstacle Warning
 5. [Video Streaming](https://github.com/DIT113-V22/group-16/wiki/Milestone-3#milestone-3-video-streaming)
