@@ -28,11 +28,11 @@ The team will work with agile development methods.
 
 ## Features of the App
 
-Manual Control
-Cruise Control
-Obstacle Avoidance
-Obstacle Warning
-Stream
+1. [Manual Control](https://github.com/DIT113-V22/group-16/wiki/Milestone-2#milestone-2-manual-control)
+2. Cruise Control
+3. [Obstacle Avoidance](https://github.com/DIT113-V22/group-16/wiki/Milestone-1#milestone-1-obstacle-avoidance)
+4. Obstacle Warning
+5. [Video Streaming](https://github.com/DIT113-V22/group-16/wiki/Milestone-3#milestone-3-video-streaming)
 
 ## Techologies
 SMCE-gd
@@ -49,6 +49,7 @@ Gradle
 3. Use Utlrasonic sensor to detect obstacle to achieve the Obstacle Avoidance.
 4. Use the Infrared sensor to achieve the Obstacal Warning.
 ## Resource
-    1. [SMCE](https://github.com/ItJustWorksTM/smce-gd/releases)
-    2. [Android Stuido](https://developer.android.com/studio)
+1. [SMCE](https://github.com/ItJustWorksTM/smce-gd/releases)
+2. [Android studio](https://developer.android.com/studio)
+3. [Arduino](https://www.arduino.cc/en/software)
  
