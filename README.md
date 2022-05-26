@@ -50,5 +50,8 @@ The team will work with agile development methods.
   <li>Use the MQTT broker connect the Android app and SMCE-gd.</li>
   <li>Use Utlrasonic sensor to detect obstacle to achieve the Obstacle Avoidance.
   <li>Use the Infrared sensor to achieve the Obstacal Warning.
+   ## Resource
+    1. [SMCE](https://github.com/ItJustWorksTM/smce-gd/releases)
+    2. [Android Stuido](https://developer.android.com/studio)
 </div>
  
