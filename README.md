@@ -30,7 +30,7 @@ The team will work with agile development methods.
 1. [Manual Control](https://github.com/DIT113-V22/group-16/wiki/Milestone-2#milestone-2-manual-control)
 2. [Cruise Control](https://github.com/DIT113-V22/group-16/wiki/Milestone-2#milestone-2-cruise-control)
 3. [Obstacle Avoidance](https://github.com/DIT113-V22/group-16/wiki/Milestone-1#milestone-1-obstacle-avoidance)
-4. Obstacle Warning
+4. [Obstacle Warning](https://github.com/DIT113-V22/group-16/wiki/Milestone-1#milestone-2-obstacle-warning)
 5. [Video Streaming](https://github.com/DIT113-V22/group-16/wiki/Milestone-3#milestone-3-video-streaming)
 
 ## Techologies
@@ -51,4 +51,27 @@ Gradle
 1. [SMCE](https://github.com/ItJustWorksTM/smce-gd/releases)
 2. [Android studio](https://developer.android.com/studio)
 3. [Arduino](https://www.arduino.cc/en/software)
+
+## Get started:
+```
+1. Android Studio
+2. JDK1.8
+3. SMCE-gd
+4. ArduinoIDE
+5. HiveMQ(or any other MQTT broker)
+```
+### Get started
+1. Clone the project by SSH or HTTPS
+* ssh:
+```
+git@github.com:DIT113-V22/group-16.git
+```
+* HTTPS:
+```
+https://github.com/DIT113-V22/group-16.git
+```
+2. After you clone or download the project, use the Android Studio to open the “androidApp” file and sync the “build.gradle”file.
+3. Then start the MQTTBroker that you have download.(The default MQTThost is your local-IP and the default MQTTport is 1883. You can set the MQTThost in "MainActivity.java")
+4. After this open the "arduino.ino" by ArduinoIDE, set the same host, port, USERNAME, and the PASSWORD.
+5. When finish those preparations, open the SMCE-gd and choose the "arduino.ino" file compile it and run, and open the "androidApp" by Android studio and run the project.
  
