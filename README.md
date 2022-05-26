@@ -6,9 +6,8 @@
 1. Bora Kocak
 2. Daniel Dovhun
 3. Cuong Darma Le Manh
-4. Danila Baryshev
-5. Yuhan Li
-6. Qianyuan Wang
+4. Yuhan Li
+5. Qianyuan Wang
 
 
 
