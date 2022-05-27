@@ -23,7 +23,7 @@ We want make an app that let users can controled the car easly and safely when t
 
  ## How are we going to make it?
 During the making of the car mostly arduino and the SMCE-gd will be used.Because we are making an Android app so we will use the Android studio.For programming language, Java and C/C++ will be used to developed software for the project.
-The team will work with agile development methods.
+The team will work with agile development methods. There will be weekly meetings where we discuss progress and the problems with the software. The problems we can not solve by our own will be adress to the TAs in weekly TA meetings
 
 ## Features of the App
 
