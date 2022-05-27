@@ -34,14 +34,18 @@ The team will work with agile development methods.
 5. [Video Streaming](https://github.com/DIT113-V22/group-16/wiki/Milestone-3#milestone-3-video-streaming)
 
 ## Techologies
-SMCE-gd
-MQTT
-Arduino
-Android Studio
-C/C++
-Java
-Github
-Gradle
+* SMCE-gd
+* MQTT
+* Arduino
+* Android Studio
+* C/C++
+* Java
+* Github
+* Gradle
+## Sensor we use
+1. [Ultrasonic sensor (SR04)](https://github.com/ItJustWorksTM/smce-gd/wiki/Vehicle-Capabilities#ultrasonic-distance-sensor)
+2. [Infrared distance sensor (GP2D120)](https://github.com/ItJustWorksTM/smce-gd/wiki/Vehicle-Capabilities#infrared-distance-sensor)
+3. [Gyroscope (GY50)](https://github.com/ItJustWorksTM/smce-gd/wiki/Vehicle-Capabilities#gyroscope)
 ## Function and technology correspondence
 1. Use UI of Android studio to let the App have the UI can control the car.
 2. Use the MQTT broker connect the Android app and SMCE-gd.
@@ -62,7 +66,7 @@ Gradle
 ```
 ### Get started
 1. Clone the project by SSH or HTTPS
-* ssh:
+* SSH:
 ```
 git@github.com:DIT113-V22/group-16.git
 ```
