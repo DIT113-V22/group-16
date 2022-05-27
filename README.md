@@ -17,7 +17,7 @@ We are going to do an Android software that allows an end user to control a smar
 
 
 ## Why we want make it? 
-We want make an app that let users can control the car easily and safely when the car is not so far with the user.It aims to minimize the human mistakes in the driving ezperience. It aims to lower the amount of crashes.
+We want make an app that let users can control the car easily and safely when the car is not so far with the user.It aims to minimize the human mistakes in the driving ezxerience. It aims to lower the amount of crashes.
   
   Scenario:
     In winter, it may take a while for the user to come out of the room to the parking space. If he uses a mobile phone to remotely control his car to the door, it will avoid the cold caused by just leaving the room.
