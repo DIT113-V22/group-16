@@ -12,14 +12,18 @@
 
 
 ## What are we going to make?
-We are going to do an Android software that allows an end user to control a smart car remotely. This app will allow users to control and watch a live stream of the car by the camera. Besides, the smart car can detect obstacles around it and avoid it using embedded sensors for it to travel freely. The smart car also have the featurs such as emergency breaking system.Also the smart car have the Cruise function.
+We are going to do an Android software that allows an end user to control a smart car remotely. This app will allow users to control and watch a live stream of the car by the camera. Besides, the smart car can detect obstacles around it and avoid it using embedded sensors for it to travel freely. The smart car also have the features such as emergency breaking system.Also the smart car have the Cruise function.
 
 
 
 ## Why we want make it? 
-We want make an app that let users can controled the car easly and safely when the car is not so far with the user.
-    Scenario:
+We want make an app that let users can control the car easily and safely when the car is not so far with the user.It aims to minimize the human mistakes in the driving ezperience. It aims to lower the amount of crashes.
+  
+  Scenario:
     In winter, it may take a while for the user to come out of the room to the parking space. If he uses a mobile phone to remotely control his car to the door, it will avoid the cold caused by just leaving the room.
+   
+   Scenario:
+    During the parking car remotely and manually, the driver could not figure out if he is close to other cars. He uses camera and obstacle warning to check how close he is to other cars. This way the parking becomes a safer and smooother experience for the driver.
 
  ## How are we going to make it?
 During the making of the car mostly arduino and the SMCE-gd will be used.Because we are making an Android app so we will use the Android studio.For programming language, Java and C/C++ will be used to developed software for the project.
