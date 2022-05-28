@@ -9,7 +9,7 @@
 4. Yuhan Li
 5. Qianyuan Wang
 
-
+## Demo Video:
 
 ## What are we going to make?
 We are going to do an Android software that allows an end user to control a smart car remotely. This app will allow users to control and watch a live stream of the car by the camera. Besides, the smart car can detect obstacles around it and avoid it using embedded sensors for it to travel freely. The smart car also have the features such as emergency breaking system.Also the smart car have the Cruise function.
