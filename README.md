@@ -46,6 +46,8 @@ The team will work with agile development methods. There will be weekly meetings
 * Java
 * Github
 * Gradle
+## Software and Hardware Architecture 
+During the making of this project, as a group we used various software tools. The main tool that we used to track the car and its progress was SMCE Godot. Since the team decided not to use hardware, we were really dependent on how we use SMCE. The code for the sketch of teh car was written in Arduino using C++. Later this sketch is displayed using SMCE.
 ## Sensor we use
 1. [Ultrasonic sensor (SR04)](https://github.com/ItJustWorksTM/smce-gd/wiki/Vehicle-Capabilities#ultrasonic-distance-sensor)
 2. [Infrared distance sensor (GP2D120)](https://github.com/ItJustWorksTM/smce-gd/wiki/Vehicle-Capabilities#infrared-distance-sensor)
