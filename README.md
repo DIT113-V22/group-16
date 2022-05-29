@@ -46,8 +46,11 @@ The team will work with agile development methods. There will be weekly meetings
 * Java
 * Github
 * Gradle
+
 ## Software and Hardware Architecture 
-During the making of this project, as a group we used various software tools. The main tool that we used to track the car and its progress was SMCE Godot. Since the team decided not to use hardware, we were really dependent on how we use SMCE. The code for the sketch of the car was written in Arduino using C++. Later this sketch is displayed using SMCE. The app part of the project was made using Android Studio. The group used Java to make the app. XML is also used in making of the app. It was used during the making of the interface. MQTT broker is used to connect and transmit data and message between car and app.
+The frontend was decided upon to be used with android platform. The application was developed with Java and can be built with Android studio IDE. 
+The backend was tested and running on a virtual simulation SMCE, with the main code developed with C++, built upon multiple libraries for the smart car.  
+We decided to make use of MQTT QOS1 in order to constantly transfer signal/data between the frontend (phone application) and the backend (the arduino car). The broker provided a simple way to ensure short messages to be transfer reliably in a constantrate. This help reduce the amount of data usage and keep a sustainable framerate of the camera. 
 
 ## Sensor we use
 1. [Ultrasonic sensor (SR04)](https://github.com/ItJustWorksTM/smce-gd/wiki/Vehicle-Capabilities#ultrasonic-distance-sensor)
